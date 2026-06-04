@@ -1,0 +1,115 @@
+import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuiz } from '../context/QuizContext';
+
+export default function Home() {
+  const { questions, lang, getRawProgress, clearProgress } = useQuiz();
+  const navigate = useNavigate();
+  const tr = lang === 'tr';
+
+  useEffect(() => { document.title = 'QuizApp'; }, []);
+
+  // Local flag so Discard immediately hides the card without needing questions to change
+  const [resumeDismissed, setResumeDismissed] = useState(false);
+
+  const resumeData = useMemo(() => {
+    if (resumeDismissed) return null;
+    const raw = getRawProgress();
+    if (!raw || !raw.questionIds) return null;
+    const rebuilt = raw.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
+    if (rebuilt.length !== raw.questionIds.length || raw.current >= rebuilt.length) return null;
+    return raw;
+  }, [questions, resumeDismissed]); // eslint-disable-line
+
+  function handleDiscard() {
+    clearProgress();
+    setResumeDismissed(true);
+  }
+
+  const categoryMap = {};
+  questions.forEach(q => {
+    const cat   = q.category || 'Genel';
+    const topic = q.topic    || 'Diğer';
+    if (!categoryMap[cat]) categoryMap[cat] = {};
+    if (!categoryMap[cat][topic]) categoryMap[cat][topic] = [];
+    categoryMap[cat][topic].push(q);
+  });
+
+  function goConfig(filter) { navigate('/quiz-config', { state: { filter } }); }
+
+  function resumeLabel(raw) {
+    const f = raw.filter;
+    if (!f) return tr ? 'Tüm Sorular' : 'All Questions';
+    if (f.type === 'topic') return `${f.category} › ${f.value}`;
+    return f.value;
+  }
+
+  return (
+    <div className="home">
+      {/* Resume card */}
+      {resumeData && (
+        <div className="resume-card">
+          <div className="resume-info">
+            <span className="resume-icon">▶</span>
+            <div>
+              <p className="resume-title">{tr ? 'Devam eden quiz' : 'Quiz in progress'}</p>
+              <p className="resume-sub">
+                {resumeLabel(resumeData)} · {resumeData.current + 1}/{resumeData.questionIds.length} {tr ? 'soruda kaldın' : 'questions in'}
+              </p>
+            </div>
+          </div>
+          <div className="resume-actions">
+            <button className="btn-primary btn-sm" onClick={() => navigate('/quiz', { state: { resume: true } })}>
+              {tr ? 'Devam Et' : 'Continue'}
+            </button>
+            <button className="btn-ghost-danger btn-sm" onClick={handleDiscard}>
+              {tr ? 'Sil' : 'Discard'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hero */}
+      <div className="hero">
+        <div className="hero-icon">⚡</div>
+        <h1>{tr ? 'Quiz Platformu' : 'Quiz Platform'}</h1>
+        <p>{tr ? 'Konu seçerek quiz başlat.' : 'Select a topic to start a quiz.'}</p>
+        <button className="btn-primary hero-btn" onClick={() => goConfig(null)}>
+          {tr ? `Tüm Sorular (${questions.length})` : `All Questions (${questions.length})`}
+        </button>
+      </div>
+
+      {/* Categories */}
+      {Object.keys(categoryMap).length === 0 && (
+        <div className="empty-state">
+          <p>{tr ? 'Henüz soru yüklenmemiş. Admin panelinden ekle.' : 'No questions yet. Add via Admin panel.'}</p>
+        </div>
+      )}
+
+      {Object.keys(categoryMap).map(cat => (
+        <div key={cat} className="category-section">
+          <div className="category-section-header">
+            <div>
+              <h2 className="category-title">{cat}</h2>
+              <span className="category-count">
+                {questions.filter(q => (q.category || 'Genel') === cat).length} {tr ? 'soru' : 'questions'}
+              </span>
+            </div>
+            <button className="btn-secondary btn-sm" onClick={() => goConfig({ type: 'category', value: cat })}>
+              {tr ? 'Tümünü Çöz' : 'Solve All'}
+            </button>
+          </div>
+          <div className="topic-grid">
+            {Object.entries(categoryMap[cat]).map(([topic, qs]) => (
+              <button key={topic} className="topic-card"
+                onClick={() => goConfig({ type: 'topic', value: topic, category: cat })}>
+                <span className="topic-name">{topic}</span>
+                <span className="topic-count">{qs.length} {tr ? 'soru' : 'questions'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

@@ -1,0 +1,323 @@
+[
+  {
+    "id": 1,
+    "category": "Network",
+    "topic": "IP",
+    "question": { "en": "How many bits is an IPv4 address?", "tr": "IPv4 adresi kaç bit uzunluğundadır?" },
+    "options": { "en": ["16 bits", "32 bits", "64 bits", "128 bits"], "tr": ["16 bit", "32 bit", "64 bit", "128 bit"] },
+    "answer": 1,
+    "explanation": {
+      "en": "IPv4 addresses are 32 bits long, divided into four 8-bit octets (e.g. 192.168.1.1). This gives a theoretical maximum of ~4.3 billion unique addresses.",
+      "tr": "IPv4 adresleri 32 bit uzunluğundadır ve her biri 8 bitlik dört oktete bölünür (örn. 192.168.1.1). Bu, teorik olarak yaklaşık 4,3 milyar benzersiz adrese olanak tanır."
+    }
+  },
+  {
+    "id": 2,
+    "category": "Network",
+    "topic": "IP",
+    "question": { "en": "How many usable host addresses are in a /24 subnet?", "tr": "/24 alt ağında kaç kullanılabilir host adresi vardır?" },
+    "options": { "en": ["254", "255", "256", "252"], "tr": ["254", "255", "256", "252"] },
+    "answer": 0,
+    "explanation": {
+      "en": "A /24 subnet has 256 addresses total (2⁸). Two are reserved: the network address (x.x.x.0) and the broadcast address (x.x.x.255), leaving 254 usable host addresses.",
+      "tr": "/24 alt ağında toplam 256 adres bulunur (2⁸). Bunlardan ikisi ayrılmıştır: ağ adresi (x.x.x.0) ve yayın adresi (x.x.x.255). Geriye 254 kullanılabilir host adresi kalır."
+    }
+  },
+  {
+    "id": 3,
+    "category": "Network",
+    "topic": "IP",
+    "question": { "en": "Which of the following is NOT a private IP range?", "tr": "Aşağıdakilerden hangisi özel (private) IP aralığı DEĞİLDİR?" },
+    "options": { "en": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "200.1.1.0/24"], "tr": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "200.1.1.0/24"] },
+    "answer": 3,
+    "explanation": {
+      "en": "RFC 1918 defines three private ranges: 10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16. The 200.x.x.x block is a public address range routable on the internet.",
+      "tr": "RFC 1918, üç özel IP aralığı tanımlar: 10.0.0.0/8, 172.16.0.0/12 ve 192.168.0.0/16. 200.x.x.x bloğu ise internet üzerinde yönlendirilebilen bir genel adres aralığıdır."
+    }
+  },
+  {
+    "id": 4,
+    "category": "Network",
+    "topic": "IP",
+    "question": { "en": "What does CIDR stand for?", "tr": "CIDR'ın açılımı nedir?" },
+    "options": {
+      "en": ["Classless Inter-Domain Routing", "Class-based Internet Domain Routing", "Circular Internet Data Relay", "Common Internet Data Routing"],
+      "tr": ["Sınıfsız Etki Alanları Arası Yönlendirme", "Sınıf Tabanlı İnternet Alan Yönlendirme", "Döngüsel İnternet Veri Geçişi", "Ortak İnternet Veri Yönlendirme"]
+    },
+    "answer": 0,
+    "explanation": {
+      "en": "CIDR (Classless Inter-Domain Routing) replaced the old class-based (A/B/C) system in 1993. It uses a prefix notation like /24 to define subnet sizes flexibly, reducing IP address waste.",
+      "tr": "CIDR (Sınıfsız Etki Alanları Arası Yönlendirme), 1993'te eski sınıf tabanlı (A/B/C) sistemi yerini aldı. /24 gibi önek notasyonu kullanarak alt ağ boyutlarını esnek biçimde tanımlar ve IP adresi israfını azaltır."
+    }
+  },
+  {
+    "id": 5,
+    "category": "Network",
+    "topic": "IP",
+    "question": { "en": "How many bits does an IPv6 address use?", "tr": "IPv6 adresi kaç bit kullanır?" },
+    "options": { "en": ["32 bits", "64 bits", "128 bits", "256 bits"], "tr": ["32 bit", "64 bit", "128 bit", "256 bit"] },
+    "answer": 2,
+    "explanation": {
+      "en": "IPv6 uses 128-bit addresses written as eight groups of four hexadecimal digits (e.g. 2001:0db8::1). This provides ~3.4 × 10³⁸ unique addresses, effectively solving IPv4 exhaustion.",
+      "tr": "IPv6, sekiz grup dört onaltılık rakamdan oluşan 128 bitlik adresler kullanır (örn. 2001:0db8::1). Bu, yaklaşık 3,4 × 10³⁸ benzersiz adres sağlayarak IPv4 tükenmesi sorununu çözer."
+    }
+  },
+  {
+    "id": 6,
+    "category": "Network",
+    "topic": "TCP",
+    "question": { "en": "What is the correct order of the TCP three-way handshake?", "tr": "TCP three-way handshake'nin doğru sırası hangisidir?" },
+    "options": { "en": ["SYN → ACK → SYN-ACK", "SYN → SYN-ACK → ACK", "ACK → SYN → SYN-ACK", "SYN-ACK → SYN → ACK"], "tr": ["SYN → ACK → SYN-ACK", "SYN → SYN-ACK → ACK", "ACK → SYN → SYN-ACK", "SYN-ACK → SYN → ACK"] },
+    "answer": 1,
+    "explanation": {
+      "en": "TCP connection setup: (1) Client sends SYN to initiate, (2) Server replies with SYN-ACK to acknowledge and synchronize, (3) Client sends ACK to confirm. Only after this is data transfer allowed.",
+      "tr": "TCP bağlantı kurulumu: (1) İstemci SYN göndererek başlatır, (2) Sunucu SYN-ACK ile onaylar ve senkronize eder, (3) İstemci ACK ile doğrular. Yalnızca bu adımdan sonra veri aktarımına izin verilir."
+    }
+  },
+  {
+    "id": 7,
+    "category": "Network",
+    "topic": "TCP",
+    "question": { "en": "At which OSI layer does TCP operate?", "tr": "TCP hangi OSI katmanında çalışır?" },
+    "options": { "en": ["Application", "Network", "Transport", "Data Link"], "tr": ["Uygulama", "Ağ", "Taşıma", "Veri Bağlantısı"] },
+    "answer": 2,
+    "explanation": {
+      "en": "TCP operates at Layer 4 (Transport) of the OSI model. It provides reliable, ordered, and error-checked delivery of a stream of bytes between applications running on hosts communicating via an IP network.",
+      "tr": "TCP, OSI modelinin 4. Katmanı olan Taşıma katmanında çalışır. IP ağı üzerinden iletişim kuran konaklar üzerinde çalışan uygulamalar arasında güvenilir, sıralı ve hata denetimli bayt akışı iletimi sağlar."
+    }
+  },
+  {
+    "id": 8,
+    "category": "Network",
+    "topic": "TCP",
+    "question": { "en": "What TCP flag is used to request a connection termination?", "tr": "Bağlantı sonlandırma isteği için hangi TCP flag kullanılır?" },
+    "options": { "en": ["SYN", "ACK", "FIN", "RST"], "tr": ["SYN", "ACK", "FIN", "RST"] },
+    "answer": 2,
+    "explanation": {
+      "en": "FIN (Finish) signals graceful connection termination. TCP uses a four-way handshake to close: each side sends FIN and receives ACK independently. RST abruptly resets a connection without this process.",
+      "tr": "FIN (Finish) bayrağı, bağlantının düzgün biçimde sonlandırılmasını bildirir. TCP kapanış için dört yönlü el sıkışma kullanır: her taraf bağımsız olarak FIN gönderir ve ACK alır. RST ise bu süreç olmadan bağlantıyı ani biçimde sıfırlar."
+    }
+  },
+  {
+    "id": 9,
+    "category": "Network",
+    "topic": "TCP",
+    "question": { "en": "What does TCP use to ensure reliable data delivery?", "tr": "TCP güvenilir veri iletimi için ne kullanır?" },
+    "options": {
+      "en": ["Checksums only", "Acknowledgments and retransmissions", "Encryption", "Packet filtering"],
+      "tr": ["Yalnızca sağlama toplamları", "Onaylamalar ve yeniden iletimler", "Şifreleme", "Paket filtreleme"]
+    },
+    "answer": 1,
+    "explanation": {
+      "en": "TCP reliability relies on acknowledgments (ACK) for every segment received. If the sender doesn't receive an ACK within a timeout window, it retransmits the segment. Sequence numbers also ensure correct ordering.",
+      "tr": "TCP güvenilirliği, alınan her segment için onaylara (ACK) dayanır. Gönderici, zaman aşımı süresi içinde ACK almazsa segmenti yeniden iletir. Sıra numaraları da doğru sıralamayı sağlar."
+    }
+  },
+  {
+    "id": 10,
+    "category": "Network",
+    "topic": "TCP",
+    "question": { "en": "What is the default TCP port for HTTPS?", "tr": "HTTPS için varsayılan TCP port numarası nedir?" },
+    "options": { "en": ["80", "8080", "443", "8443"], "tr": ["80", "8080", "443", "8443"] },
+    "answer": 2,
+    "explanation": {
+      "en": "HTTPS uses port 443 by default. Port 80 is for plain HTTP. Port 8080 is a common alternative HTTP port, and 8443 is often used as an alternative HTTPS port in development environments.",
+      "tr": "HTTPS varsayılan olarak 443 portunu kullanır. Port 80, düz HTTP içindir. Port 8080 yaygın bir alternatif HTTP portudur ve 8443 geliştirme ortamlarında alternatif HTTPS portu olarak sıkça kullanılır."
+    }
+  },
+  {
+    "id": 11,
+    "category": "Network",
+    "topic": "UDP",
+    "question": { "en": "Which statement about UDP is TRUE?", "tr": "UDP hakkında hangi ifade DOĞRUDUR?" },
+    "options": {
+      "en": ["UDP guarantees delivery", "UDP is connection-oriented", "UDP has lower overhead than TCP", "UDP retransmits lost packets"],
+      "tr": ["UDP teslimatı garanti eder", "UDP bağlantı yönelimlidir", "UDP'nin TCP'ye göre yükü daha düşüktür", "UDP kayıp paketleri yeniden iletir"]
+    },
+    "answer": 2,
+    "explanation": {
+      "en": "UDP has a minimal 8-byte header vs. TCP's 20+ bytes. It skips connection setup, acknowledgments, and retransmissions. This lower overhead makes it ideal for latency-sensitive applications like DNS, VoIP, and online gaming.",
+      "tr": "UDP'nin başlığı yalnızca 8 bayttır; TCP'nin ise 20+ bayttır. Bağlantı kurulumu, onaylamalar ve yeniden iletimleri atlayarak daha düşük yük oluşturur. Bu özellik, DNS, VoIP ve çevrimiçi oyunlar gibi gecikmeye duyarlı uygulamalar için idealdir."
+    }
+  },
+  {
+    "id": 12,
+    "category": "Network",
+    "topic": "UDP",
+    "question": { "en": "Which application typically uses UDP?", "tr": "Hangi uygulama genellikle UDP kullanır?" },
+    "options": { "en": ["File transfer (FTP)", "Email (SMTP)", "Video streaming", "Web browsing (HTTP)"], "tr": ["Dosya transferi (FTP)", "E-posta (SMTP)", "Video akışı", "Web gezintisi (HTTP)"] },
+    "answer": 2,
+    "explanation": {
+      "en": "Video streaming uses UDP because a slightly dropped frame is less noticeable than the delay caused by TCP's retransmission. Real-time applications prioritize low latency over perfect reliability.",
+      "tr": "Video akışı UDP kullanır; çünkü hafifçe kaybolan bir kare, TCP'nin yeniden iletiminden kaynaklanan gecikmeden daha az fark edilir. Gerçek zamanlı uygulamalar, mükemmel güvenilirlik yerine düşük gecikmeyi tercih eder."
+    }
+  },
+  {
+    "id": 13,
+    "category": "Network",
+    "topic": "UDP",
+    "question": { "en": "What is the UDP header size?", "tr": "UDP başlık boyutu nedir?" },
+    "options": { "en": ["8 bytes", "20 bytes", "32 bytes", "64 bytes"], "tr": ["8 bayt", "20 bayt", "32 bayt", "64 bayt"] },
+    "answer": 0,
+    "explanation": {
+      "en": "UDP's header contains only four fields: source port (2B), destination port (2B), length (2B), and checksum (2B) — totaling 8 bytes. TCP's minimum header is 20 bytes, making UDP significantly lighter.",
+      "tr": "UDP başlığı yalnızca dört alan içerir: kaynak port (2B), hedef port (2B), uzunluk (2B) ve sağlama toplamı (2B) — toplam 8 bayt. TCP'nin minimum başlığı 20 bayttır; bu da UDP'yi önemli ölçüde daha hafif kılar."
+    }
+  },
+  {
+    "id": 14,
+    "category": "Network",
+    "topic": "DNS",
+    "question": { "en": "What does DNS stand for?", "tr": "DNS'in açılımı nedir?" },
+    "options": {
+      "en": ["Dynamic Name System", "Domain Name System", "Data Network Service", "Digital Naming Standard"],
+      "tr": ["Dinamik İsim Sistemi", "Alan Adı Sistemi", "Veri Ağı Servisi", "Dijital İsimlendirme Standardı"]
+    },
+    "answer": 1,
+    "explanation": {
+      "en": "DNS (Domain Name System) translates human-readable domain names (e.g. google.com) into IP addresses that computers use to route traffic. It's often called the 'phonebook of the internet'.",
+      "tr": "DNS (Alan Adı Sistemi), okunabilir alan adlarını (örn. google.com) bilgisayarların trafiği yönlendirmek için kullandığı IP adreslerine çevirir. Genellikle 'internetin telefon rehberi' olarak adlandırılır."
+    }
+  },
+  {
+    "id": 15,
+    "category": "Network",
+    "topic": "DNS",
+    "question": { "en": "Which port does DNS primarily use?", "tr": "DNS öncelikli olarak hangi portu kullanır?" },
+    "options": { "en": ["21", "25", "53", "80"], "tr": ["21", "25", "53", "80"] },
+    "answer": 2,
+    "explanation": {
+      "en": "DNS uses port 53 for both UDP (standard queries, fast) and TCP (zone transfers and responses larger than 512 bytes). Port 21 is FTP, 25 is SMTP, and 80 is HTTP.",
+      "tr": "DNS, hem UDP (standart sorgular, hızlı) hem de TCP (bölge transferleri ve 512 bayttan büyük yanıtlar) için 53 portunu kullanır. Port 21 FTP, 25 SMTP ve 80 HTTP içindir."
+    }
+  },
+  {
+    "id": 16,
+    "category": "Network",
+    "topic": "DNS",
+    "question": { "en": "Which DNS record type maps a hostname to an IPv4 address?", "tr": "Hangi DNS kayıt türü bir hostname'i IPv4 adresine eşler?" },
+    "options": { "en": ["AAAA", "MX", "A", "CNAME"], "tr": ["AAAA", "MX", "A", "CNAME"] },
+    "answer": 2,
+    "explanation": {
+      "en": "An 'A' record maps a hostname to an IPv4 address. 'AAAA' maps to IPv6. 'CNAME' is an alias for another hostname. 'MX' specifies the mail server responsible for accepting email for that domain.",
+      "tr": "'A' kaydı bir hostname'i IPv4 adresine eşler. 'AAAA' IPv6'ya eşler. 'CNAME' başka bir hostname için takma addır. 'MX' ise o alan için e-posta kabul eden posta sunucusunu belirtir."
+    }
+  },
+  {
+    "id": 17,
+    "category": "Network",
+    "topic": "DNS",
+    "question": { "en": "What is a DNS MX record used for?", "tr": "DNS MX kaydı ne için kullanılır?" },
+    "options": {
+      "en": ["Mail server routing", "IPv6 address mapping", "Domain aliases", "IP reverse lookup"],
+      "tr": ["Posta sunucusu yönlendirme", "IPv6 adres eşleme", "Alan adı takma adları", "IP ters arama"]
+    },
+    "answer": 0,
+    "explanation": {
+      "en": "MX (Mail Exchanger) records tell sending mail servers where to deliver email for a domain. They include a priority value — lower numbers have higher priority — allowing fallback mail servers to be defined.",
+      "tr": "MX (Posta Değiştiricisi) kayıtları, gönderen posta sunucularına bir alan için e-postaların nereye teslim edileceğini bildirir. Daha düşük sayıların daha yüksek önceliğe sahip olduğu bir öncelik değeri içerir; bu sayede yedek posta sunucuları tanımlanabilir."
+    }
+  },
+  {
+    "id": 18,
+    "category": "Network",
+    "topic": "HTTP",
+    "question": { "en": "What HTTP status code means 'Not Found'?", "tr": "HTTP 'Not Found' durum kodu hangisidir?" },
+    "options": { "en": ["200", "301", "403", "404"], "tr": ["200", "301", "403", "404"] },
+    "answer": 3,
+    "explanation": {
+      "en": "404 means the server couldn't find the requested resource. 200 is OK (success). 301 is Moved Permanently. 403 is Forbidden (server understood the request but refuses to authorize it).",
+      "tr": "404, sunucunun istenen kaynağı bulamadığı anlamına gelir. 200 Tamam (başarı). 301 Kalıcı Yönlendirme. 403 Yasak (sunucu isteği anladı ancak yetkilendirmeyi reddetti)."
+    }
+  },
+  {
+    "id": 19,
+    "category": "Network",
+    "topic": "HTTP",
+    "question": { "en": "Which HTTP method is used to send data to a server to create/update a resource?", "tr": "Sunucuya kaynak oluşturmak/güncellemek için veri göndermede hangi HTTP metodu kullanılır?" },
+    "options": { "en": ["GET", "POST", "DELETE", "HEAD"], "tr": ["GET", "POST", "DELETE", "HEAD"] },
+    "answer": 1,
+    "explanation": {
+      "en": "POST sends data in the request body to create or update a resource. GET retrieves data (no body). DELETE removes a resource. HEAD is like GET but returns only headers, not the body — useful for checking if a resource exists.",
+      "tr": "POST, kaynak oluşturmak veya güncellemek için isteğin gövdesinde veri gönderir. GET veri alır (gövde yok). DELETE bir kaynağı kaldırır. HEAD, GET gibidir ancak yalnızca başlıkları döndürür; kaynağın var olup olmadığını kontrol etmek için kullanışlıdır."
+    }
+  },
+  {
+    "id": 20,
+    "category": "Network",
+    "topic": "HTTP",
+    "question": { "en": "What does the HTTP status code 301 indicate?", "tr": "HTTP 301 durum kodu ne anlama gelir?" },
+    "options": {
+      "en": ["OK", "Permanently Moved", "Unauthorized", "Internal Server Error"],
+      "tr": ["Başarılı", "Kalıcı Yönlendirme", "Yetkisiz", "Dahili Sunucu Hatası"]
+    },
+    "answer": 1,
+    "explanation": {
+      "en": "301 (Moved Permanently) tells the browser and search engines that the resource has permanently moved to a new URL. Browsers cache this redirect and future requests go directly to the new URL. 302 is temporary redirect.",
+      "tr": "301 (Kalıcı Yönlendirme), tarayıcıya ve arama motorlarına kaynağın yeni bir URL'ye kalıcı olarak taşındığını bildirir. Tarayıcılar bu yönlendirmeyi önbelleğe alır ve gelecekteki istekler doğrudan yeni URL'ye gider. 302 ise geçici yönlendirmedir."
+    }
+  },
+  {
+    "id": 21,
+    "category": "Network",
+    "topic": "HTTP",
+    "question": { "en": "What is the main difference between HTTP and HTTPS?", "tr": "HTTP ile HTTPS arasındaki temel fark nedir?" },
+    "options": {
+      "en": ["HTTPS is faster", "HTTPS uses TLS/SSL encryption", "HTTPS uses a different port internally", "HTTPS is only for mobile"],
+      "tr": ["HTTPS daha hızlıdır", "HTTPS, TLS/SSL şifreleme kullanır", "HTTPS dahili olarak farklı port kullanır", "HTTPS yalnızca mobil içindir"]
+    },
+    "answer": 1,
+    "explanation": {
+      "en": "HTTPS wraps HTTP inside a TLS (Transport Layer Security) tunnel. This encrypts data in transit, authenticates the server via certificates, and prevents man-in-the-middle attacks. HTTPS runs on port 443, HTTP on port 80.",
+      "tr": "HTTPS, HTTP'yi bir TLS (Taşıma Katmanı Güvenliği) tüneli içine sarar. Bu, aktarımdaki verileri şifreler, sunucuyu sertifikalarla doğrular ve ortadaki adam saldırılarını önler. HTTPS 443, HTTP ise 80 portunda çalışır."
+    }
+  },
+  {
+    "id": 22,
+    "category": "Network",
+    "topic": "OSI Model",
+    "question": { "en": "How many layers does the OSI model have?", "tr": "OSI modelinin kaç katmanı vardır?" },
+    "options": { "en": ["4", "5", "6", "7"], "tr": ["4", "5", "6", "7"] },
+    "answer": 3,
+    "explanation": {
+      "en": "The OSI model has 7 layers (bottom to top): Physical, Data Link, Network, Transport, Session, Presentation, Application. A useful mnemonic: 'Please Do Not Throw Sausage Pizza Away'.",
+      "tr": "OSI modelinin 7 katmanı vardır (alttan üste): Fiziksel, Veri Bağlantısı, Ağ, Taşıma, Oturum, Sunum, Uygulama. Türkçe için hatırlatıcı: 'Fiziksel Veri Ağı Taşıyorken Sunumu Uyguluyorum'."
+    }
+  },
+  {
+    "id": 23,
+    "category": "Network",
+    "topic": "OSI Model",
+    "question": { "en": "At which OSI layer does a router primarily operate?", "tr": "Router (yönlendirici) OSI modelinin hangi katmanında çalışır?" },
+    "options": { "en": ["Layer 1 – Physical", "Layer 2 – Data Link", "Layer 3 – Network", "Layer 4 – Transport"], "tr": ["Katman 1 – Fiziksel", "Katman 2 – Veri Bağlantısı", "Katman 3 – Ağ", "Katman 4 – Taşıma"] },
+    "answer": 2,
+    "explanation": {
+      "en": "Routers operate at Layer 3 (Network) and use IP addresses to forward packets between networks. Switches operate at Layer 2 using MAC addresses. Hubs/repeaters operate at Layer 1 (Physical).",
+      "tr": "Yönlendiriciler Katman 3'te (Ağ) çalışır ve ağlar arasında paket iletmek için IP adreslerini kullanır. Switch'ler MAC adreslerini kullanarak Katman 2'de çalışır. Hub'lar/tekrarlayıcılar Katman 1'de (Fiziksel) çalışır."
+    }
+  },
+  {
+    "id": 24,
+    "category": "Network",
+    "topic": "OSI Model",
+    "question": { "en": "Which OSI layer is responsible for end-to-end error recovery?", "tr": "Uçtan uca hata kurtarma işleminden hangi OSI katmanı sorumludur?" },
+    "options": { "en": ["Network", "Transport", "Session", "Presentation"], "tr": ["Ağ", "Taşıma", "Oturum", "Sunum"] },
+    "answer": 1,
+    "explanation": {
+      "en": "Layer 4 (Transport) handles end-to-end communication between two hosts, including error detection, flow control, and retransmission (when using TCP). The Network layer handles routing between nodes, not end-to-end reliability.",
+      "tr": "Katman 4 (Taşıma), hata algılama, akış denetimi ve yeniden iletim (TCP kullanıldığında) dahil olmak üzere iki konak arasındaki uçtan uca iletişimi yönetir. Ağ katmanı ise düğümler arasındaki yönlendirmeyi yönetir."
+    }
+  },
+  {
+    "id": 25,
+    "category": "Network",
+    "topic": "OSI Model",
+    "question": { "en": "What device operates at OSI Layer 2?", "tr": "OSI Katman 2'de hangi cihaz çalışır?" },
+    "options": { "en": ["Router", "Switch", "Firewall", "Modem"], "tr": ["Router", "Switch", "Firewall", "Modem"] },
+    "answer": 1,
+    "explanation": {
+      "en": "Switches operate at Layer 2 (Data Link) using MAC addresses to forward frames within a local network segment. Routers work at Layer 3. Firewalls can work at Layers 3–7 depending on type. Modems work at Layer 1.",
+      "tr": "Switch'ler, yerel bir ağ segmenti içinde çerçeveleri iletmek için MAC adreslerini kullanarak Katman 2'de (Veri Bağlantısı) çalışır. Yönlendiriciler Katman 3'te çalışır. Güvenlik duvarları türüne bağlı olarak 3–7. Katmanlarda çalışabilir. Modemler ise Katman 1'de çalışır."
+    }
+  }
+]

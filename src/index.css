@@ -1,0 +1,71 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:            #0d0d1a;
+  --bg2:           #13132a;
+  --surface:       rgba(255,255,255,0.04);
+  --surface-hover: rgba(255,255,255,0.07);
+  --border:        rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.15);
+  --primary:       #7c3aed;
+  --primary-light: #a78bfa;
+  --primary-glow:  rgba(124,58,237,0.35);
+  --accent:        #6366f1;
+  --success:       #10b981;
+  --success-glow:  rgba(16,185,129,0.25);
+  --danger:        #f43f5e;
+  --danger-glow:   rgba(244,63,94,0.25);
+  --warning:       #f59e0b;
+  --text:          #e2e8f0;
+  --text-muted:    #64748b;
+  --text-dim:      #94a3b8;
+  --radius:        14px;
+  --radius-sm:     8px;
+  --glass:         blur(16px) saturate(180%);
+  --grad:          linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+  --grad-danger:   linear-gradient(135deg, #f43f5e, #fb923c);
+  --grad-success:  linear-gradient(135deg, #10b981, #34d399);
+  --shadow-glow:   0 0 40px rgba(124,58,237,0.15);
+  --shadow-card:   0 8px 32px rgba(0,0,0,0.4);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(124,58,237,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 10%, rgba(99,102,241,0.06) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ---- Keyframes ---- */
+@keyframes fillRight {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes streak-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+@keyframes popIn {
+  0%   { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
