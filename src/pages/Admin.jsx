@@ -168,15 +168,21 @@ export default function Admin() {
 
   function handleUpload(mode = 'replace') {
     if (!previewQuestions) return;
-    let final = previewQuestions;
-    if (mode === 'merge') {
-      const existingTexts = new Set(
-        questions.map(q => (typeof q.question === 'object' ? q.question.en ?? q.question.tr : q.question) ?? '')
-      );
-      const newOnly = previewQuestions.filter(q => {
-        const t = typeof q.question === 'object' ? q.question.en ?? q.question.tr : q.question;
-        return !existingTexts.has(t);
-      });
+
+    const qText = q => (typeof q.question === 'object' ? q.question.en ?? q.question.tr : q.question) ?? '';
+    const newTexts = new Set(previewQuestions.map(qText));
+
+    // Non-duplicate existing questions are always kept
+    const kept = questions.filter(q => !newTexts.has(qText(q)));
+
+    let final;
+    if (mode === 'replace') {
+      // Keep non-duplicate existing + overwrite duplicates with new versions + add brand new
+      final = [...kept, ...previewQuestions];
+    } else {
+      // merge: keep everything existing, only add non-duplicates from new file
+      const existingTexts = new Set(questions.map(qText));
+      const newOnly = previewQuestions.filter(q => !existingTexts.has(qText(q)));
       final = [...questions, ...newOnly];
     }
     uploadQuestions(final);
@@ -466,7 +472,7 @@ export default function Admin() {
                       {duplicates.length > 3 && <li>...ve {duplicates.length - 3} tane daha</li>}
                     </ul>
                     <div style={{display:'flex', gap:8, marginTop:10}}>
-                      <button className="btn-primary btn-sm" onClick={() => handleUpload('replace')}>Üzerine Yaz (Tümünü)</button>
+                      <button className="btn-primary btn-sm" onClick={() => handleUpload('replace')}>Duplicate'leri Güncelle</button>
                       <button className="btn-secondary btn-sm" onClick={() => handleUpload('merge')}>Sadece Yenileri Ekle</button>
                     </div>
                   </div>
