@@ -39,50 +39,56 @@ export function QuizProvider({ children }) {
   function adminLogin(p)  { if (p === ADMIN_PASSWORD) { setIsAdminLoggedIn(true); return true; } return false; }
   function adminLogout()  { setIsAdminLoggedIn(false); }
 
-  // ---- Soruları Supabase'e EKLE (append, ID Supabase'den otomatik) ----
+  // ---- Soruları Supabase'e yaz: hepsini sil → yenileri ekle ----
   async function uploadQuestions(newQuestions) {
     setUploadStatus(null);
     try {
-      const rows = newQuestions.map((q) => ({
-        // id yok → Supabase bigserial ile otomatik atar
-        category:    q.category    ?? null,
-        topic:       q.topic       ?? null,
-        question:    typeof q.question === 'object' ? q.question : { en: q.question },
-        options:     Array.isArray(q.options) ? { en: q.options } : q.options,
-        answer:      q.answer,
-        explanation: q.explanation
-          ? (typeof q.explanation === 'object' ? q.explanation : { en: q.explanation })
-          : null,
-      }));
-
-      const { data, error } = await supabase.from('questions').insert(rows).select('id');
-      if (error) {
-        console.error('Supabase insert error:', error.message);
-        setUploadStatus({ ok: false, msg: error.message });
-        return { success: false, error: error.message };
+      // 1. Tümünü sil (bigserial → id her zaman > 0)
+      const { error: delErr } = await supabase.from('questions').delete().gt('id', 0);
+      if (delErr) {
+        console.error('Delete error:', delErr.message);
+        setUploadStatus({ ok: false, msg: delErr.message });
+        return { success: false };
       }
 
-      // Optimistic güncelle: DB'deki güncel listeyi çek
+      // 2. Yenileri ekle (id göndermiyoruz, Supabase otomatik atıyor)
+      if (newQuestions.length > 0) {
+        const rows = newQuestions.map((q) => ({
+          category:    q.category    ?? null,
+          topic:       q.topic       ?? null,
+          question:    typeof q.question === 'object' ? q.question : { en: q.question },
+          options:     Array.isArray(q.options) ? { en: q.options } : q.options,
+          answer:      q.answer,
+          explanation: q.explanation
+            ? (typeof q.explanation === 'object' ? q.explanation : { en: q.explanation })
+            : null,
+        }));
+        const { error: insErr } = await supabase.from('questions').insert(rows);
+        if (insErr) {
+          console.error('Insert error:', insErr.message);
+          setUploadStatus({ ok: false, msg: insErr.message });
+          return { success: false };
+        }
+      }
+
+      // 3. State'i güncel DB verisiyle senkronize et
       const { data: allQ } = await supabase.from('questions').select('*').order('id');
       setQuestions(allQ ?? []);
-      setUploadStatus({ ok: true, msg: `${rows.length} soru eklendi ✅ (Toplam: ${(allQ ?? []).length})` });
+      setUploadStatus({ ok: true, msg: `${newQuestions.length} soru kaydedildi ✅` });
       return { success: true };
     } catch (err) {
       console.error('uploadQuestions error:', err);
       setUploadStatus({ ok: false, msg: err.message });
-      return { success: false, error: err.message };
+      return { success: false };
     }
   }
 
-  // ---- Tüm soruları sil (admin paneli için) ----
+  // ---- Tüm soruları sil ----
   async function clearAllQuestions() {
     setUploadStatus(null);
     try {
       const { error } = await supabase.from('questions').delete().gt('id', 0);
-      if (error) {
-        setUploadStatus({ ok: false, msg: error.message });
-        return { success: false };
-      }
+      if (error) { setUploadStatus({ ok: false, msg: error.message }); return { success: false }; }
       setQuestions([]);
       setUploadStatus({ ok: true, msg: 'Tüm sorular silindi 🗑️' });
       return { success: true };
