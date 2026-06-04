@@ -11,6 +11,7 @@ export function QuizProvider({ children }) {
   const [questions,       setQuestions]       = useState([]);
   const [loading,         setLoading]         = useState(true);
   const [dbError,         setDbError]         = useState(null);
+  const [uploadStatus,    setUploadStatus]    = useState(null); // { ok, msg }
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [lang,            setLang]            = useState('en');
   const [scoreHistory,    setScoreHistory]    = useState(() => {
@@ -38,34 +39,56 @@ export function QuizProvider({ children }) {
   function adminLogin(p)  { if (p === ADMIN_PASSWORD) { setIsAdminLoggedIn(true); return true; } return false; }
   function adminLogout()  { setIsAdminLoggedIn(false); }
 
-  // ---- Tüm soruları Supabase'e yaz (mevcut = sil + yenileri ekle) ----
+  // ---- Soruları Supabase'e EKLE (append, ID Supabase'den otomatik) ----
   async function uploadQuestions(newQuestions) {
-    setQuestions(newQuestions); // optimistic
+    setUploadStatus(null);
     try {
-      // Mevcut tüm satırları sil
-      const { data: existing } = await supabase.from('questions').select('id');
-      const ids = (existing ?? []).map(r => r.id);
-      if (ids.length > 0) {
-        await supabase.from('questions').delete().in('id', ids);
+      const rows = newQuestions.map((q) => ({
+        // id yok → Supabase bigserial ile otomatik atar
+        category:    q.category    ?? null,
+        topic:       q.topic       ?? null,
+        question:    typeof q.question === 'object' ? q.question : { en: q.question },
+        options:     Array.isArray(q.options) ? { en: q.options } : q.options,
+        answer:      q.answer,
+        explanation: q.explanation
+          ? (typeof q.explanation === 'object' ? q.explanation : { en: q.explanation })
+          : null,
+      }));
+
+      const { data, error } = await supabase.from('questions').insert(rows).select('id');
+      if (error) {
+        console.error('Supabase insert error:', error.message);
+        setUploadStatus({ ok: false, msg: error.message });
+        return { success: false, error: error.message };
       }
-      // Yenileri ekle
-      if (newQuestions.length > 0) {
-        const rows = newQuestions.map((q, i) => ({
-          id:          q.id ?? i + 1,
-          category:    q.category    ?? null,
-          topic:       q.topic       ?? null,
-          question:    typeof q.question    === 'object' ? q.question    : { en: q.question },
-          options:     Array.isArray(q.options) ? { en: q.options } : q.options,
-          answer:      q.answer,
-          explanation: q.explanation
-            ? (typeof q.explanation === 'object' ? q.explanation : { en: q.explanation })
-            : null,
-        }));
-        const { error } = await supabase.from('questions').insert(rows);
-        if (error) console.error('Supabase insert error:', error.message);
-      }
+
+      // Optimistic güncelle: DB'deki güncel listeyi çek
+      const { data: allQ } = await supabase.from('questions').select('*').order('id');
+      setQuestions(allQ ?? []);
+      setUploadStatus({ ok: true, msg: `${rows.length} soru eklendi ✅ (Toplam: ${(allQ ?? []).length})` });
+      return { success: true };
     } catch (err) {
       console.error('uploadQuestions error:', err);
+      setUploadStatus({ ok: false, msg: err.message });
+      return { success: false, error: err.message };
+    }
+  }
+
+  // ---- Tüm soruları sil (admin paneli için) ----
+  async function clearAllQuestions() {
+    setUploadStatus(null);
+    try {
+      const { error } = await supabase.from('questions').delete().gt('id', 0);
+      if (error) {
+        setUploadStatus({ ok: false, msg: error.message });
+        return { success: false };
+      }
+      setQuestions([]);
+      setUploadStatus({ ok: true, msg: 'Tüm sorular silindi 🗑️' });
+      return { success: true };
+    } catch (err) {
+      setUploadStatus({ ok: false, msg: err.message });
+      return { success: false };
     }
   }
 
@@ -101,7 +124,7 @@ export function QuizProvider({ children }) {
       questions, loading, dbError,
       lang, setLang, getText,
       isAdminLoggedIn, adminLogin, adminLogout,
-      uploadQuestions, resetToDefault,
+      uploadQuestions, resetToDefault, uploadStatus, clearAllQuestions,
       scoreHistory, saveScore, clearHistory,
       saveProgress, clearProgress, getRawProgress,
     }}>
