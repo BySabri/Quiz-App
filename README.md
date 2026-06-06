@@ -1,21 +1,22 @@
 # Quiz Platform
 
-Bilingual (EN/TR), topic-based quiz application built with React 19 + Vite. Features a dark glassmorphism UI, configurable quiz sessions, mid-quiz resume, score history, and a full admin panel.
+> An open-source quiz and question bank app I built to study for my midterms and finals — and to make it easy for my friends to study together.
+
+During university I kept running into the same problem: there was no tool where I could load my own notes as questions and run a proper exam simulation by topic. So I built one. The goal was simple — convert study notes into a structured question bank, practice under timed conditions, and share the same question pool with classmates. With the Admin panel, anyone can add questions for any course in JSON format and share them instantly.
 
 ---
 
 ## Features
 
-### Quiz
-- **Category → Topic hierarchy** — browse by subject, drill down to specific topics
-- **Quiz Config** — choose question count, sequential or random order, per-question timer (15 / 30 / 60s)
-- **Bilingual** — EN/TR toggle in navbar; questions, options and explanations switch instantly
-- **Explanation box** — after each answer, a brief explanation appears explaining why the answer is correct
-- **Left-to-right fill animation** — smooth green/red sweep on answer reveal instead of distracting shake effects
+### Quiz Engine
+- **Category → Topic hierarchy** — browse by course, drill down to specific topics
+- **Quiz configuration** — question count, sequential or random order, per-question timer (15 / 30 / 60s)
+- **Per-question language tab** — switch between TR/EN on each individual question
+- **Explanation box** — after each answer, a short explanation appears for why it's correct
 - **Streak counter** — 🔥 badge when answering 2+ consecutive questions correctly
 - **Keyboard shortcuts** — `A` `B` `C` `D` to select, `Space` to confirm, `Enter` for next question
-- **Mid-quiz resume** — progress saved to localStorage; a "Continue" card appears on the home page if a quiz was interrupted
-- **Confetti** — fires on 80%+ score
+- **Mid-quiz resume** — progress saved to localStorage; a "Continue" card appears on the home page
+- **Confetti** — fires on 80%+ score 🎉
 
 ### Score History (`/gecmis`)
 - Last 20 results stored in localStorage
@@ -24,10 +25,10 @@ Bilingual (EN/TR), topic-based quiz application built with React 19 + Vite. Feat
 
 ### Admin Panel (`/admin`)
 - **Password protected** (default: `eysadem` — change in `QuizContext.jsx`)
-- **Question list** — search by text, filter by category/topic chips, delete individual or all questions
-- **Question editor** — add or edit questions directly via form (EN/TR fields, options, correct answer, explanation) without touching JSON
-- **JSON upload** — drag & drop or click to select; validates format, detects duplicates (offers overwrite or merge-only)
-- **JSON export** — download current questions for editing
+- **Question list** — search by text, filter by category/topic chips, delete individually or all at once
+- **Question editor** — add or edit questions via form (EN/TR fields, options, correct answer, explanation)
+- **JSON upload** — drag & drop or click to select; validates format, detects duplicates (overwrite or merge-only)
+- **JSON export** — download the current question bank for offline editing
 
 ---
 
@@ -50,7 +51,7 @@ Bilingual (EN/TR), topic-based quiz application built with React 19 + Vite. Feat
 | Field | Required | Notes |
 |---|---|---|
 | `id` | Yes | Unique integer |
-| `category` | No | Groups topics on home page |
+| `category` | No | Groups topics on the home page |
 | `topic` | No | Sub-category within a category |
 | `question` | Yes | Object `{ en, tr }` or plain string |
 | `options` | Yes | Object `{ en: [...], tr: [...] }` or plain array — minimum 2 items |
@@ -66,10 +67,11 @@ Single-language (English or Turkish only) is supported — omit the other key.
 | | |
 |---|---|
 | Framework | React 19 |
-| Build tool | Vite 8 |
+| Build | Vite 8 |
 | Routing | React Router v7 |
-| Styling | Plain CSS (CSS custom properties, glassmorphism) |
-| Persistence | localStorage only — no backend required |
+| Backend | Supabase (PostgreSQL) |
+| Deploy | Netlify |
+| Styling | Plain CSS (CSS custom properties, glassmorphism dark theme) |
 
 ---
 
@@ -82,7 +84,16 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173).
 
-### Build for production
+### Supabase Connection
+
+Create a `.env` file in the project root:
+
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+```
+
+### Production Build
 
 ```bash
 npm run build
@@ -106,9 +117,15 @@ src/
 │   ├── Results.jsx         # Score breakdown + confetti
 │   ├── Gecmis.jsx          # Score history page
 │   └── Admin.jsx           # Admin panel (question editor, upload, delete)
-├── App.jsx                 # Routes
+├── App.jsx                 # Routes + loading screen
 ├── App.css                 # All component styles
 └── index.css               # CSS variables, keyframes, global reset
 public/
 └── questions.json          # Default sample questions (loaded on first run)
 ```
+
+---
+
+## Contributing
+
+To add questions, use the JSON format above and upload via the Admin panel or edit `public/questions.json` directly. Pull requests are welcome.
