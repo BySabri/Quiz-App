@@ -13,8 +13,13 @@ import './App.css';
 function AppLoading() {
   return (
     <div className="app-loading">
-      <div className="app-loading-spinner" />
-      <p>Yükleniyor...</p>
+      <div className="app-loading-ring">
+        <div className="app-loading-ring-inner" />
+        <span className="app-loading-icon">⚡</span>
+      </div>
+      <div className="app-loading-dots">
+        <span /><span /><span />
+      </div>
     </div>
   );
 }
