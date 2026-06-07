@@ -3,27 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '../context/QuizContext';
 
 export default function Home() {
-  const { questions, lang, getRawProgress, clearProgress } = useQuiz();
+  const { questions, lang, getAllProgress, clearProgress } = useQuiz();
   const navigate = useNavigate();
   const tr = lang === 'tr';
 
   useEffect(() => { document.title = 'QuizApp'; }, []);
 
-  // Local flag so Discard immediately hides the card without needing questions to change
-  const [resumeDismissed, setResumeDismissed] = useState(false);
+  const [dismissedKeys, setDismissedKeys] = useState(new Set());
 
-  const resumeData = useMemo(() => {
-    if (resumeDismissed) return null;
-    const raw = getRawProgress();
-    if (!raw || !raw.questionIds) return null;
-    const rebuilt = raw.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
-    if (rebuilt.length !== raw.questionIds.length || raw.current >= rebuilt.length) return null;
-    return raw;
-  }, [questions, resumeDismissed]); // eslint-disable-line
+  const resumeSessions = useMemo(() => {
+    return getAllProgress()
+      .filter(({ progressKey, data }) => {
+        if (dismissedKeys.has(progressKey)) return false;
+        if (!data?.questionIds || data.current >= data.questionIds.length) return false;
+        // Tüm soruların DB'de hâlâ var olduğunu kontrol et
+        const rebuilt = data.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
+        return rebuilt.length === data.questionIds.length;
+      });
+  }, [questions, dismissedKeys]); // eslint-disable-line
 
-  function handleDiscard() {
-    clearProgress();
-    setResumeDismissed(true);
+  function handleDiscard(progressKey, filter) {
+    clearProgress(filter ?? progressKey);
+    setDismissedKeys(prev => new Set([...prev, progressKey]));
   }
 
   const categoryMap = {};
@@ -46,28 +47,30 @@ export default function Home() {
 
   return (
     <div className="home">
-      {/* Resume card */}
-      {resumeData && (
-        <div className="resume-card">
+      {/* Resume cards — her aktif oturum için ayrı kart */}
+      {resumeSessions.map(({ progressKey, data }) => (
+        <div className="resume-card" key={progressKey}>
           <div className="resume-info">
             <span className="resume-icon">▶</span>
             <div>
               <p className="resume-title">{tr ? 'Devam eden quiz' : 'Quiz in progress'}</p>
               <p className="resume-sub">
-                {resumeLabel(resumeData)} · {resumeData.current + 1}/{resumeData.questionIds.length} {tr ? 'soruda kaldın' : 'questions in'}
+                {resumeLabel(data)} · {data.current + 1}/{data.questionIds.length} {tr ? 'soruda kaldın' : 'questions in'}
               </p>
             </div>
           </div>
           <div className="resume-actions">
-            <button className="btn-primary btn-sm" onClick={() => navigate('/quiz', { state: { resume: true } })}>
+            <button className="btn-primary btn-sm"
+              onClick={() => navigate('/quiz', { state: { resume: true, progressKey, filter: data.filter, config: data.config } })}>
               {tr ? 'Devam Et' : 'Continue'}
             </button>
-            <button className="btn-ghost-danger btn-sm" onClick={handleDiscard}>
+            <button className="btn-ghost-danger btn-sm"
+              onClick={() => handleDiscard(progressKey, data.filter)}>
               {tr ? 'Sil' : 'Discard'}
             </button>
           </div>
         </div>
-      )}
+      ))}
 
       {/* Hero */}
       <div className="hero">

@@ -33,14 +33,16 @@ export default function Quiz() {
   const { state } = useLocation();
   const tr = lang === 'tr';
 
-  const isResume = state?.resume === true;
-  const filter   = state?.filter  ?? null;
-  const config   = state?.config  ?? { count: null, random: false, timer: 0 };
+  const isResume   = state?.resume === true;
+  const filter      = state?.filter  ?? null;
+  const progressKey = state?.progressKey ?? null; // resume için
+  const config      = state?.config  ?? { count: null, random: false, timer: 0 };
 
   // Build filtered list once, restore if resuming
   const { filtered, initCurrent, initAnswerMap, initStreak, initStartTime } = useMemo(() => {
     if (isResume) {
-      const raw = getRawProgress();
+      // progressKey state'ten gelir (Home.jsx'ten geçirildi)
+      const raw = getRawProgress(progressKey ?? filter);
       if (raw?.questionIds) {
         const rebuilt = raw.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
         if (rebuilt.length === raw.questionIds.length) {
@@ -50,17 +52,22 @@ export default function Quiz() {
             initAnswerMap: raw.answerMap  ?? {},
             initStreak:    raw.streak     ?? 0,
             initStartTime: raw.startTime  ?? Date.now(),
+            resumedFilter: raw.filter,
           };
         }
       }
     }
+    const activeFilter = filter;
     let base = [...questions];
-    if (filter?.type === 'category') base = base.filter(q => (q.category || 'Genel') === filter.value);
-    if (filter?.type === 'topic')    base = base.filter(q => (q.topic || 'Diğer') === filter.value && (q.category || 'Genel') === filter.category);
+    if (activeFilter?.type === 'category') base = base.filter(q => (q.category || 'Genel') === activeFilter.value);
+    if (activeFilter?.type === 'topic')    base = base.filter(q => (q.topic || 'Diğer') === activeFilter.value && (q.category || 'Genel') === activeFilter.category);
     if (config.random) base = shuffle(base);
     if (config.count)  base = base.slice(0, config.count);
-    return { filtered: base, initCurrent: 0, initAnswerMap: {}, initStreak: 0, initStartTime: Date.now() };
+    return { filtered: base, initCurrent: 0, initAnswerMap: {}, initStreak: 0, initStartTime: Date.now(), resumedFilter: null };
   }, []); // eslint-disable-line
+
+  // Resume durumunda filter’ı progress veriden al
+  const activeFilter = resumedFilter ?? filter;
 
   const [current,      setCurrent]      = useState(initCurrent);
   const [selected,     setSelected]     = useState(initAnswerMap[initCurrent]?.selected ?? null);
@@ -136,8 +143,8 @@ export default function Quiz() {
   const progress       = ((current + (showFeedback ? 1 : 0)) / filtered.length) * 100;
   const timerPercent   = config.timer ? (timeLeft / config.timer) * 100 : 100;
   const timerDanger    = config.timer > 0 && timeLeft <= 5;
-  const filterLabel    = filter
-    ? filter.type === 'topic' ? `${filter.category} › ${filter.value}` : filter.value
+  const filterLabel    = activeFilter
+    ? activeFilter.type === 'topic' ? `${activeFilter.category} › ${activeFilter.value}` : activeFilter.value
     : (tr ? 'Tüm Sorular' : 'All Questions');
 
   function handleSelect(idx) { if (!showFeedback) setSelected(idx); }
@@ -172,16 +179,16 @@ export default function Quiz() {
     const nextIndex = current + 1;
 
     if (isLastQuestion) {
-      clearProgress();
+      clearProgress(activeFilter);
       const finalAnswers = filtered.map((_, i) => answerMap[i]).filter(Boolean);
       const timeTaken    = Math.round((Date.now() - startTimeRef.current) / 1000);
       const score        = finalAnswers.filter(a => a.selected === a.correct).length;
-      saveScore({ filter, config, score, total: filtered.length, timeTaken });
+      saveScore({ filter: activeFilter, config, score, total: filtered.length, timeTaken });
       navigate('/results', { state: { answers: finalAnswers, questions: filtered, timeTaken } });
     } else {
-      saveProgress({
+      saveProgress(activeFilter, {
         questionIds: filtered.map(fq => fq.id),
-        filter, config,
+        filter: activeFilter, config,
         current: nextIndex,
         answerMap,
         streak,

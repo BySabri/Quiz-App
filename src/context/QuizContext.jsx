@@ -3,9 +3,15 @@ import { supabase } from '../lib/supabase';
 
 const QuizContext = createContext();
 
-const ADMIN_PASSWORD = 'eysadem';
-const HISTORY_KEY    = 'quiz_history';
-const PROGRESS_KEY   = 'quiz_progress';
+const ADMIN_PASSWORD  = 'eysadem';
+const HISTORY_KEY     = 'quiz_history';
+const PROGRESS_PREFIX = 'quiz_progress_';
+
+function getProgressKey(filter) {
+  if (!filter) return 'all';
+  if (filter.type === 'category') return `cat_${filter.value}`;
+  return `topic_${filter.category}_${filter.value}`;
+}
 
 export function QuizProvider({ children }) {
   const [questions,       setQuestions]       = useState([]);
@@ -113,10 +119,32 @@ export function QuizProvider({ children }) {
   }
   function clearHistory() { setScoreHistory([]); localStorage.removeItem(HISTORY_KEY); }
 
-  // ---- Quiz ilerleme (localStorage, per-user) ----
-  function saveProgress(data)  { localStorage.setItem(PROGRESS_KEY, JSON.stringify(data)); }
-  function clearProgress()     { localStorage.removeItem(PROGRESS_KEY); }
-  function getRawProgress()    { try { return JSON.parse(localStorage.getItem(PROGRESS_KEY)); } catch { return null; } }
+  // ---- Quiz ilerleme: her filtre için ayrı localStorage key ----
+  function saveProgress(filter, data) {
+    const k = PROGRESS_PREFIX + getProgressKey(filter);
+    localStorage.setItem(k, JSON.stringify(data));
+  }
+  function clearProgress(filter) {
+    const k = PROGRESS_PREFIX + getProgressKey(filter);
+    localStorage.removeItem(k);
+  }
+  function getRawProgress(filterOrKey) {
+    const k = PROGRESS_PREFIX + (typeof filterOrKey === 'string' ? filterOrKey : getProgressKey(filterOrKey));
+    try { return JSON.parse(localStorage.getItem(k)); }
+    catch { return null; }
+  }
+  function getAllProgress() {
+    const result = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k?.startsWith(PROGRESS_PREFIX)) continue;
+      try {
+        const data = JSON.parse(localStorage.getItem(k));
+        if (data?.questionIds) result.push({ progressKey: k.slice(PROGRESS_PREFIX.length), data });
+      } catch { /* skip */ }
+    }
+    return result;
+  }
 
   // ---- Dil yardımcısı ----
   function getText(q) {
@@ -132,7 +160,7 @@ export function QuizProvider({ children }) {
       isAdminLoggedIn, adminLogin, adminLogout,
       uploadQuestions, resetToDefault, uploadStatus, clearAllQuestions,
       scoreHistory, saveScore, clearHistory,
-      saveProgress, clearProgress, getRawProgress,
+      saveProgress, clearProgress, getRawProgress, getAllProgress,
     }}>
       {children}
     </QuizContext.Provider>
