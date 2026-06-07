@@ -255,19 +255,15 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(
-    to right,
-    rgba(16,185,129,0.22) var(--pct-correct),
-    rgba(239,68,68,0.18)  var(--pct-correct)
-  );
-  animation: waveFill 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: waveFill 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  transform-origin: left center;
 }
 
 @keyframes waveFill {
-  0%   { clip-path: inset(0 100% 0 0); }
-  65%  { clip-path: inset(0 -4%  0 0); }
-  80%  { clip-path: inset(0  2%  0 0); }
-  100% { clip-path: inset(0  0%  0 0); }
+  0%   { transform: scaleX(0); }
+  60%  { transform: scaleX(1.03); }
+  80%  { transform: scaleX(0.98); }
+  100% { transform: scaleX(1); }
 }
 
 .empty-state { text-align: center; padding: 48px 0; color: var(--text-muted); }

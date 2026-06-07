@@ -140,7 +140,11 @@ export default function Home() {
                   {stat && (
                     <span
                       className="topic-fill"
-                      style={{ '--pct-correct': pctCorrect, '--pct-wrong': pctWrong }}
+                      style={{
+                        background: `linear-gradient(to right,
+                          rgba(16,185,129,0.28) ${stat.percent}%,
+                          rgba(239,68,68,0.22)  ${stat.percent}%)`
+                      }}
                     />
                   )}
                   <span className="topic-name">{topic}</span>

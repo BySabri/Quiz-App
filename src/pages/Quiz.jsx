@@ -152,10 +152,24 @@ export default function Quiz() {
   function handleConfirm() {
     if (selected === null) return;
     clearInterval(timerRef.current);
-    const entry = { questionId: q.id, selected, correct: q.answer };
-    setAnswerMap(m => ({ ...m, [current]: entry }));
+    const entry       = { questionId: q.id, selected, correct: q.answer };
+    const newAnswerMap = { ...answerMap, [current]: entry };
+    const newStreak    = selected === q.answer ? streak + 1 : 0;
+    setAnswerMap(newAnswerMap);
     setShowFeedback(true);
-    setStreak(s => selected === q.answer ? s + 1 : 0);
+    setStreak(newStreak);
+    // Hemen kaydet → ana sayfaya dönünce topic fill gözüksün
+    if (!isLastQuestion) {
+      saveProgress(activeFilter, {
+        questionIds:  filtered.map(fq => fq.id),
+        filter:       activeFilter,
+        config,
+        current,
+        answerMap:    newAnswerMap,
+        streak:       newStreak,
+        startTime:    startTimeRef.current,
+      });
+    }
   }
 
   function goTo(index, entry) {
