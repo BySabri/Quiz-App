@@ -35,32 +35,61 @@ export default function Home() {
     categoryMap[cat][topic].push(q);
   });
 
-  // Topic bazlı istatistik: tamamlanan + devam eden quizlerden hesapla
+  // Topic bazlı istatistik: tamamlanan + devam eden tüm quizlerdeki cevapları global olarak derle
   const statsMap = useMemo(() => {
     const map = {};
+    const globalAnswers = {};
 
-    // 1. Tamamlanan quizler (scoreHistory, en yeni önce)
-    scoreHistory.forEach(entry => {
-      if (entry.filter?.type === 'topic') {
-        const key = `${entry.filter.category}__${entry.filter.value}`;
-        if (!map[key]) map[key] = { percent: entry.percent };
+    // 1. Tamamlanan quizler (scoreHistory, oldest -> newest)
+    [...scoreHistory].reverse().forEach(entry => {
+      if (entry.answerMap) {
+        Object.values(entry.answerMap).forEach(ans => {
+          if (ans.questionId) globalAnswers[ans.questionId] = ans;
+        });
       }
     });
 
     // 2. Devam eden quizler (answerMap'ten hesapla — scoreHistory'yi override eder)
     getAllProgress().forEach(({ data }) => {
-      if (data.filter?.type === 'topic') {
-        const key = `${data.filter.category}__${data.filter.value}`;
-        const answers = Object.values(data.answerMap ?? {});
-        if (answers.length === 0) return;
-        const correct = answers.filter(a => a.selected === a.correct).length;
-        const pct = Math.round((correct / answers.length) * 100);
-        map[key] = { percent: pct }; // progress veri öncelikli
+      if (data.answerMap) {
+        Object.values(data.answerMap).forEach(ans => {
+          if (ans.questionId) {
+            globalAnswers[ans.questionId] = ans;
+          }
+        });
       }
     });
 
+    // 3. Soruları dolaşıp topic'lere göre grupla
+    questions.forEach(q => {
+      const cat = q.category || 'Genel';
+      const topic = q.topic || 'Diğer';
+      const key = `${cat}__${topic}`;
+      
+      if (!map[key]) {
+        map[key] = { totalQ: 0, answeredCount: 0, correctCount: 0, wrongCount: 0 };
+      }
+      
+      map[key].totalQ++;
+      
+      const ans = globalAnswers[q.id];
+      if (ans && ans.selected !== null) {
+        map[key].answeredCount++;
+        if (ans.selected === ans.correct) map[key].correctCount++;
+        else map[key].wrongCount++;
+      }
+    });
+
+    // Oranları hesapla
+    Object.keys(map).forEach(key => {
+      const stat = map[key];
+      stat.totalPct = stat.totalQ > 0 ? (stat.answeredCount / stat.totalQ) * 100 : 0;
+      stat.correctRatio = stat.answeredCount > 0 ? stat.correctCount / stat.answeredCount : 0;
+      stat.wrongRatio = stat.answeredCount > 0 ? stat.wrongCount / stat.answeredCount : 0;
+    });
+
     return map;
-  }, [scoreHistory]); // eslint-disable-line
+  }, [scoreHistory, questions]); // eslint-disable-line
 
   function goConfig(filter) { navigate('/quiz-config', { state: { filter } }); }
 
@@ -132,15 +161,30 @@ export default function Home() {
             {Object.entries(categoryMap[cat]).map(([topic, qs]) => {
               const statKey = `${cat}__${topic}`;
               const stat    = statsMap[statKey];
-              const pctCorrect = stat ? `${stat.percent}%` : '0%';
-              const pctWrong   = stat ? `${100 - stat.percent}%` : '0%';
+              let bgGradient;
+              if (stat.correctRatio === 1) {
+                bgGradient = 'rgba(16,185,129,0.2)';
+              } else if (stat.wrongRatio === 1) {
+                bgGradient = 'rgba(244,63,94,0.3)';
+              } else {
+                const correctEdge = stat.correctRatio * 100;
+                // 2% yumuşak geçiş
+                const blendStart = Math.max(0, correctEdge - 2);
+                const blendEnd   = Math.min(100, correctEdge + 2);
+                
+                bgGradient = `linear-gradient(90deg, 
+                  rgba(16,185,129,0.2) 0%, 
+                  rgba(16,185,129,0.2) ${blendStart}%, 
+                  rgba(244,63,94,0.3) ${blendEnd}%, 
+                  rgba(244,63,94,0.3) 100%)`;
+              }
+
               return (
                 <button key={topic} className="topic-card"
                   onClick={() => goConfig({ type: 'topic', value: topic, category: cat })}>
-                  {stat && (
-                    <div className="topic-fill">
-                      <div className="fill-c" style={{ width: `${stat.percent}%` }} />
-                      <div className="fill-w" style={{ width: `${100 - stat.percent}%` }} />
+                  {stat && stat.totalPct > 0 && (
+                    <div className="topic-fill" style={{ width: `${stat.totalPct}%`, background: bgGradient }}>
+                      <div className="fill-shimmer" />
                     </div>
                   )}
                   <span className="topic-name">{topic}</span>

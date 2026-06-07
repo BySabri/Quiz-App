@@ -208,7 +208,7 @@ export default function Quiz() {
         .filter(a => a.selected !== a.correct)
         .map(a => a.questionId);
 
-      saveScore({ filter: activeFilter, config, score, total: filtered.length, timeTaken, wrongIds });
+      saveScore({ filter: activeFilter, config, score, total: filtered.length, timeTaken, wrongIds, answerMap });
       navigate('/results', { state: { answers: finalAnswers, questions: filtered, timeTaken } });
     } else {
       saveProgress(activeFilter, {
