@@ -59,10 +59,16 @@ export default function Quiz() {
     }
     const activeFilter = filter;
     let base = [...questions];
-    if (activeFilter?.type === 'category') base = base.filter(q => (q.category || 'Genel') === activeFilter.value);
-    if (activeFilter?.type === 'topic')    base = base.filter(q => (q.topic || 'Diğer') === activeFilter.value && (q.category || 'Genel') === activeFilter.category);
-    if (config.random) base = shuffle(base);
-    if (config.count)  base = base.slice(0, config.count);
+    
+    if (state?.specificIds?.length > 0) {
+      base = base.filter(q => state.specificIds.includes(q.id));
+    } else {
+      if (activeFilter?.type === 'category') base = base.filter(q => (q.category || 'Genel') === activeFilter.value);
+      if (activeFilter?.type === 'topic')    base = base.filter(q => (q.topic || 'Diğer') === activeFilter.value && (q.category || 'Genel') === activeFilter.category);
+      if (config.random) base = shuffle(base);
+      if (config.count)  base = base.slice(0, config.count);
+    }
+    
     return { filtered: base, initCurrent: 0, initAnswerMap: {}, initStreak: 0, initStartTime: Date.now(), resumedFilter: null };
   }, []); // eslint-disable-line
 
@@ -197,7 +203,12 @@ export default function Quiz() {
       const finalAnswers = filtered.map((_, i) => answerMap[i]).filter(Boolean);
       const timeTaken    = Math.round((Date.now() - startTimeRef.current) / 1000);
       const score        = finalAnswers.filter(a => a.selected === a.correct).length;
-      saveScore({ filter: activeFilter, config, score, total: filtered.length, timeTaken });
+      
+      const wrongIds = finalAnswers
+        .filter(a => a.selected !== a.correct)
+        .map(a => a.questionId);
+
+      saveScore({ filter: activeFilter, config, score, total: filtered.length, timeTaken, wrongIds });
       navigate('/results', { state: { answers: finalAnswers, questions: filtered, timeTaken } });
     } else {
       saveProgress(activeFilter, {

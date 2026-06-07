@@ -255,15 +255,18 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  animation: waveFill 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  display: flex;
+  opacity: 0;
+  animation: waveFill 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   transform-origin: left center;
 }
+.topic-fill .fill-c { background: rgba(16,185,129,0.25); height: 100%; transition: width .3s; }
+.topic-fill .fill-w { background: rgba(239,68,68,0.2);  height: 100%; transition: width .3s; }
 
 @keyframes waveFill {
-  0%   { transform: scaleX(0); }
-  60%  { transform: scaleX(1.03); }
-  80%  { transform: scaleX(0.98); }
-  100% { transform: scaleX(1); }
+  0%   { opacity: 0; transform: scaleX(0); }
+  50%  { opacity: 1; transform: scaleX(1.05); }
+  100% { opacity: 1; transform: scaleX(1); }
 }
 
 .empty-state { text-align: center; padding: 48px 0; color: var(--text-muted); }

@@ -43,7 +43,7 @@ export default function Gecmis() {
   }
 
   return (
-    <div className="gecmis-page">
+    <div className="gecmis-page" style={{ animation: 'slideUp .4s ease' }}>
       <div className="gecmis-header">
         <h1>{tr ? 'Skor Geçmişi' : 'Score History'}</h1>
         {scoreHistory.length > 0 && (
@@ -54,7 +54,7 @@ export default function Gecmis() {
       </div>
 
       {scoreHistory.length === 0 ? (
-        <div className="gecmis-empty">
+        <div className="gecmis-empty" style={{ animation: 'popIn .4s ease' }}>
           <p className="gecmis-empty-icon">📋</p>
           <p>{tr ? 'Henüz çözülmüş quiz yok.' : 'No quizzes completed yet.'}</p>
           <button className="btn-primary" onClick={() => navigate('/')}>
@@ -64,7 +64,7 @@ export default function Gecmis() {
       ) : (
         <>
           {/* Özet istatistik */}
-          <div className="gecmis-stats">
+          <div className="gecmis-stats" style={{ animation: 'slideUp .4s ease', animationDelay: '0.1s', animationFillMode: 'both' }}>
             <div className="gecmis-stat">
               <span className="gecmis-stat-n">{scoreHistory.length}</span>
               <span className="gecmis-stat-l">{tr ? 'Toplam Quiz' : 'Total Quizzes'}</span>
@@ -85,7 +85,7 @@ export default function Gecmis() {
 
           <div className="gecmis-list">
             {scoreHistory.map((entry, i) => (
-              <div key={entry.id} className="gecmis-row">
+              <div key={entry.id} className="gecmis-row" style={{ animation: 'slideUp .4s ease', animationDelay: `${0.15 + (i * 0.05)}s`, animationFillMode: 'both' }}>
                 <div className="gecmis-rank">#{i + 1}</div>
                 <div className="gecmis-score-circle" style={{ borderColor: gradeColor(entry.percent), color: gradeColor(entry.percent) }}>
                   <span className="gecmis-pct">{entry.percent}%</span>
@@ -101,6 +101,14 @@ export default function Gecmis() {
                   </p>
                   <p className="gecmis-date">{formatDate(entry.date)} · {timeAgo(entry.date, tr)}</p>
                 </div>
+                {entry.wrongIds?.length > 0 && (
+                  <div className="gecmis-actions" style={{ marginLeft: 'auto', paddingLeft: 12 }}>
+                    <button className="btn-secondary btn-sm"
+                      onClick={() => navigate('/quiz', { state: { specificIds: entry.wrongIds, filter: entry.filter, config: { ...entry.config, random: false } } })}>
+                      {tr ? 'Yanlışları Çöz' : 'Solve Wrongs'}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

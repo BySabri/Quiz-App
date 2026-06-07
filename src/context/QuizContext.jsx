@@ -111,8 +111,8 @@ export function QuizProvider({ children }) {
   }
 
   // ---- Skor geçmişi (localStorage, per-user) ----
-  function saveScore({ filter, config, score, total, timeTaken }) {
-    const entry = { id: Date.now(), date: new Date().toISOString(), filter, config, score, total, percent: Math.round((score / total) * 100), timeTaken };
+  function saveScore({ filter, config, score, total, timeTaken, wrongIds }) {
+    const entry = { id: Date.now(), date: new Date().toISOString(), filter, config, score, total, percent: Math.round((score / total) * 100), timeTaken, wrongIds };
     const updated = [entry, ...scoreHistory].slice(0, 20);
     setScoreHistory(updated);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));

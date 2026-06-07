@@ -138,14 +138,10 @@ export default function Home() {
                 <button key={topic} className="topic-card"
                   onClick={() => goConfig({ type: 'topic', value: topic, category: cat })}>
                   {stat && (
-                    <span
-                      className="topic-fill"
-                      style={{
-                        background: `linear-gradient(to right,
-                          rgba(16,185,129,0.28) ${stat.percent}%,
-                          rgba(239,68,68,0.22)  ${stat.percent}%)`
-                      }}
-                    />
+                    <div className="topic-fill">
+                      <div className="fill-c" style={{ width: `${stat.percent}%` }} />
+                      <div className="fill-w" style={{ width: `${100 - stat.percent}%` }} />
+                    </div>
                   )}
                   <span className="topic-name">{topic}</span>
                   <span className="topic-count">{qs.length} {tr ? 'soru' : 'questions'}</span>
