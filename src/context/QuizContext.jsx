@@ -133,12 +133,22 @@ export function QuizProvider({ children }) {
     const k = PROGRESS_PREFIX + getProgressKey(filter);
     localStorage.setItem(k, JSON.stringify(data));
   }
-  function clearProgress(filter) {
-    const k = PROGRESS_PREFIX + getProgressKey(filter);
+  function clearProgress(filterOrKey) {
+    let k;
+    if (typeof filterOrKey === 'string') {
+      k = filterOrKey.startsWith(PROGRESS_PREFIX) ? filterOrKey : PROGRESS_PREFIX + filterOrKey;
+    } else {
+      k = PROGRESS_PREFIX + getProgressKey(filterOrKey);
+    }
     localStorage.removeItem(k);
   }
   function getRawProgress(filterOrKey) {
-    const k = PROGRESS_PREFIX + (typeof filterOrKey === 'string' ? filterOrKey : getProgressKey(filterOrKey));
+    let k;
+    if (typeof filterOrKey === 'string') {
+      k = filterOrKey.startsWith(PROGRESS_PREFIX) ? filterOrKey : PROGRESS_PREFIX + filterOrKey;
+    } else {
+      k = PROGRESS_PREFIX + getProgressKey(filterOrKey);
+    }
     try { return JSON.parse(localStorage.getItem(k)); }
     catch { return null; }
   }
