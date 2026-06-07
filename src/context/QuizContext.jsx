@@ -117,8 +117,17 @@ export function QuizProvider({ children }) {
     setScoreHistory(updated);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
   }
-  function clearHistory() { setScoreHistory([]); localStorage.removeItem(HISTORY_KEY); }
-
+  function clearHistory() { 
+    setScoreHistory([]); 
+    localStorage.removeItem(HISTORY_KEY);
+    // Tüm yarım kalmış quiz ilerlemelerini de temizle
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(PROGRESS_PREFIX)) keysToRemove.push(k);
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+  }
   // ---- Quiz ilerleme: her filtre için ayrı localStorage key ----
   function saveProgress(filter, data) {
     const k = PROGRESS_PREFIX + getProgressKey(filter);
