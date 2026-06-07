@@ -39,7 +39,7 @@ export default function Quiz() {
   const config      = state?.config  ?? { count: null, random: false, timer: 0 };
 
   // Build filtered list once, restore if resuming
-  const { filtered, initCurrent, initAnswerMap, initStreak, initStartTime } = useMemo(() => {
+  const { filtered, initCurrent, initAnswerMap, initStreak, initStartTime, resumedFilter } = useMemo(() => {
     if (isResume) {
       // progressKey state'ten gelir (Home.jsx'ten geçirildi)
       const raw = getRawProgress(progressKey ?? filter);

@@ -15,12 +15,11 @@ export default function Home() {
     return getAllProgress()
       .filter(({ progressKey, data }) => {
         if (dismissedKeys.has(progressKey)) return false;
-        if (!data?.questionIds || data.current >= data.questionIds.length) return false;
-        // Tüm soruların DB'de hâlâ var olduğunu kontrol et
-        const rebuilt = data.questionIds.map(id => questions.find(q => q.id === id)).filter(Boolean);
-        return rebuilt.length === data.questionIds.length;
+        if (!data?.questionIds?.length) return false;
+        if (data.current >= data.questionIds.length) return false;
+        return true;
       });
-  }, [questions, dismissedKeys]); // eslint-disable-line
+  }, [dismissedKeys]); // eslint-disable-line
 
   function handleDiscard(progressKey, filter) {
     clearProgress(filter ?? progressKey);
