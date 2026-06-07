@@ -231,6 +231,7 @@
 
 .topic-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .topic-card {
+  position: relative; overflow: hidden;
   display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
   padding: 12px 16px;
   background: rgba(255,255,255,0.03);
@@ -245,8 +246,30 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 16px var(--primary-glow);
 }
-.topic-name  { font-size: 14px; font-weight: 600; color: var(--text); }
-.topic-count { font-size: 12px; color: var(--text-muted); }
+.topic-name  { position: relative; z-index: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+.topic-count { position: relative; z-index: 1; font-size: 12px; color: var(--text-muted); }
+
+/* ---- Topic fill: performance wave ---- */
+.topic-fill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(16,185,129,0.22) var(--pct-correct),
+    rgba(239,68,68,0.18)  var(--pct-correct)
+  );
+  animation: waveFill 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes waveFill {
+  0%   { clip-path: inset(0 100% 0 0); }
+  65%  { clip-path: inset(0 -4%  0 0); }
+  80%  { clip-path: inset(0  2%  0 0); }
+  100% { clip-path: inset(0  0%  0 0); }
+}
+
 .empty-state { text-align: center; padding: 48px 0; color: var(--text-muted); }
 
 /* ========== QUIZ ========== */

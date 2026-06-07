@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '../context/QuizContext';
 
 export default function Home() {
-  const { questions, lang, getAllProgress, clearProgress } = useQuiz();
+  const { questions, lang, getAllProgress, clearProgress, scoreHistory } = useQuiz();
   const navigate = useNavigate();
   const tr = lang === 'tr';
 
@@ -34,6 +34,33 @@ export default function Home() {
     if (!categoryMap[cat][topic]) categoryMap[cat][topic] = [];
     categoryMap[cat][topic].push(q);
   });
+
+  // Topic bazlı istatistik: tamamlanan + devam eden quizlerden hesapla
+  const statsMap = useMemo(() => {
+    const map = {};
+
+    // 1. Tamamlanan quizler (scoreHistory, en yeni önce)
+    scoreHistory.forEach(entry => {
+      if (entry.filter?.type === 'topic') {
+        const key = `${entry.filter.category}__${entry.filter.value}`;
+        if (!map[key]) map[key] = { percent: entry.percent };
+      }
+    });
+
+    // 2. Devam eden quizler (answerMap'ten hesapla — scoreHistory'yi override eder)
+    getAllProgress().forEach(({ data }) => {
+      if (data.filter?.type === 'topic') {
+        const key = `${data.filter.category}__${data.filter.value}`;
+        const answers = Object.values(data.answerMap ?? {});
+        if (answers.length === 0) return;
+        const correct = answers.filter(a => a.selected === a.correct).length;
+        const pct = Math.round((correct / answers.length) * 100);
+        map[key] = { percent: pct }; // progress veri öncelikli
+      }
+    });
+
+    return map;
+  }, [scoreHistory]); // eslint-disable-line
 
   function goConfig(filter) { navigate('/quiz-config', { state: { filter } }); }
 
@@ -102,13 +129,25 @@ export default function Home() {
             </button>
           </div>
           <div className="topic-grid">
-            {Object.entries(categoryMap[cat]).map(([topic, qs]) => (
-              <button key={topic} className="topic-card"
-                onClick={() => goConfig({ type: 'topic', value: topic, category: cat })}>
-                <span className="topic-name">{topic}</span>
-                <span className="topic-count">{qs.length} {tr ? 'soru' : 'questions'}</span>
-              </button>
-            ))}
+            {Object.entries(categoryMap[cat]).map(([topic, qs]) => {
+              const statKey = `${cat}__${topic}`;
+              const stat    = statsMap[statKey];
+              const pctCorrect = stat ? `${stat.percent}%` : '0%';
+              const pctWrong   = stat ? `${100 - stat.percent}%` : '0%';
+              return (
+                <button key={topic} className="topic-card"
+                  onClick={() => goConfig({ type: 'topic', value: topic, category: cat })}>
+                  {stat && (
+                    <span
+                      className="topic-fill"
+                      style={{ '--pct-correct': pctCorrect, '--pct-wrong': pctWrong }}
+                    />
+                  )}
+                  <span className="topic-name">{topic}</span>
+                  <span className="topic-count">{qs.length} {tr ? 'soru' : 'questions'}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}
