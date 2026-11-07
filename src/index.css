@@ -27,6 +27,20 @@
   --grad-success:  linear-gradient(135deg, #10b981, #34d399);
   --shadow-glow:   0 0 40px rgba(124,58,237,0.15);
   --shadow-card:   0 8px 32px rgba(0,0,0,0.4);
+  --input-bg:      #1c1b30; /* koyu kartların üstündeki input'ların düz rengi */
+
+  color-scheme: dark; /* tarayıcının kendi kontrolleri (autofill, scrollbar…) koyu temada */
+}
+
+/* Tarayıcı otomatik doldurunca (kayıtlı kullanıcı adı/şifre) beyaz arka plan + siyah yazı basmasın */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+          box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  transition: background-color 600000s 0s;
 }
 
 body {
