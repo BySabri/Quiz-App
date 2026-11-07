@@ -47,7 +47,11 @@ export default function Gecmis() {
       <div className="gecmis-header">
         <h1>{tr ? 'Skor Geçmişi' : 'Score History'}</h1>
         {scoreHistory.length > 0 && (
-          <button className="btn-ghost-danger btn-sm" onClick={clearHistory}>
+          <button className="btn-ghost-danger btn-sm" onClick={() => {
+            if (confirm(tr
+              ? 'Tüm geçmiş, yarım quizler ve çözülmüş soru kayıtların silinecek (tüm cihazlarda). Emin misin?'
+              : 'All history, unfinished quizzes and solved-question records will be deleted (on all devices). Are you sure?')) clearHistory();
+          }}>
             {tr ? 'Tümünü Temizle' : 'Clear All'}
           </button>
         )}
@@ -98,13 +102,14 @@ export default function Gecmis() {
                     {entry.timeTaken ? ` · ${entry.timeTaken}s` : ''}
                     {entry.config?.timer ? ` · ${entry.config.timer}s ${tr ? 'süre' : 'timer'}` : ''}
                     {entry.config?.random ? ` · ${tr ? 'rastgele' : 'random'}` : ''}
+                    {entry.config?.mode === 'exam' ? ` · ${tr ? 'sınav' : 'exam'}` : ''}
                   </p>
                   <p className="gecmis-date">{formatDate(entry.date)} · {timeAgo(entry.date, tr)}</p>
                 </div>
                 {entry.wrongIds?.length > 0 && (
                   <div className="gecmis-actions" style={{ marginLeft: 'auto', paddingLeft: 12 }}>
                     <button className="btn-secondary btn-sm"
-                      onClick={() => navigate('/quiz', { state: { specificIds: entry.wrongIds, filter: entry.filter, config: { ...entry.config, random: false } } })}>
+                      onClick={() => navigate('/quiz', { state: { specificIds: entry.wrongIds, filter: entry.filter, config: { ...entry.config, random: false, mode: 'study', examSeconds: 0 } } })}>
                       {tr ? 'Yanlışları Çöz' : 'Solve Wrongs'}
                     </button>
                   </div>

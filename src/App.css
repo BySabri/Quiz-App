@@ -532,6 +532,34 @@
 }
 .timer-badge.timer-danger { background: rgba(244,63,94,0.15); border-color: var(--danger); color: var(--danger); animation: streak-pop .4s ease infinite alternate; }
 
+/* "Emin değilim" */
+.unsure-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: -6px 0 18px; padding: 6px 12px;
+  background: transparent; border: 1px dashed var(--border-bright);
+  border-radius: 999px; cursor: pointer;
+  font: inherit; font-size: 13px; color: var(--text-muted);
+  transition: color .15s, border-color .15s, background .15s;
+}
+.unsure-btn:hover  { color: var(--text); border-color: var(--warning); }
+.unsure-btn.active { color: var(--warning); border-style: solid; border-color: var(--warning); background: rgba(245,158,11,0.1); }
+.unsure-note { font-size: 13px; color: var(--warning); margin: -6px 0 14px; }
+
+/* Sınav modu: soru haritası */
+.exam-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; justify-content: center; }
+.exam-dot {
+  min-width: 32px; height: 32px; padding: 0 6px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer;
+  font: inherit; font-size: 12px; font-weight: 700; color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.exam-dot:hover    { border-color: var(--primary); color: var(--text); }
+.exam-dot.answered { background: rgba(124,58,237,0.2); border-color: var(--primary); color: var(--primary-light); }
+.exam-dot.unsure   { box-shadow: inset 0 -3px 0 var(--warning); }
+.exam-dot.current  { outline: 2px solid var(--primary-light); outline-offset: 1px; color: var(--text); }
+
 .timer-bar { height: 3px; background: rgba(255,255,255,0.05); border-radius: 999px; margin-bottom: 16px; overflow: hidden; }
 .timer-fill { height: 100%; background: var(--grad); border-radius: 999px; }
 .timer-fill-danger { background: var(--grad-danger); }
@@ -564,6 +592,7 @@
 }
 .config-opt:hover { border-color: var(--primary); color: var(--text); background: rgba(124,58,237,0.08); }
 .config-opt.active { background: rgba(124,58,237,0.2); border-color: var(--primary); color: var(--primary-light); }
+.config-opt:disabled { opacity: .35; cursor: not-allowed; }
 .config-summary {
   font-size: 13px; color: var(--text-muted); text-align: center;
   margin: 4px 0 24px; padding: 10px; background: rgba(255,255,255,0.03);
@@ -699,6 +728,7 @@
 .result-question { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
 .result-answer   { font-size: 12px; color: var(--text-muted); }
 .result-answer b { color: var(--text-dim); }
+.result-expl     { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; opacity: .85; }
 
 .results-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
@@ -734,6 +764,13 @@
 }
 .login-card input::placeholder { color: var(--text-muted); }
 .login-card input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+/* Metin gibi görünen buton (Kayıt ol / Giriş yap geçişi) */
+.link-btn {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--primary-light); font: inherit; font-weight: 700;
+}
+.link-btn:hover { text-decoration: underline; }
 
 .admin-page { max-width: 680px; margin: 0 auto; }
 .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
@@ -935,6 +972,7 @@
   border-radius: var(--radius); padding: 16px 20px;
   margin-bottom: 16px; animation: slideUp .3s ease;
 }
+.due-card { background: rgba(245,158,11,0.08); border-color: var(--warning); }
 .resume-info   { display: flex; align-items: center; gap: 14px; }
 .resume-icon   { font-size: 22px; color: var(--primary-light); }
 .resume-title  { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
@@ -1022,6 +1060,10 @@
 .mobile-link:last-child { border-bottom: none; }
 .mobile-link:hover  { color: var(--text); background: var(--surface-hover); }
 .mobile-link.active { color: var(--primary-light); }
+.mobile-link-btn {
+  background: none; border: none;
+  text-align: left; font-family: inherit; cursor: pointer; color: var(--danger);
+}
 
 /* ========== MOBILE RESPONSIVE ========== */
 @media (max-width: 640px) {

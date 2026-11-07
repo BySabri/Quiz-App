@@ -15,16 +15,25 @@ During university I kept running into the same problem: there was no tool where 
 - **Explanation box** — after each answer, a short explanation appears for why it's correct
 - **Streak counter** — 🔥 badge when answering 2+ consecutive questions correctly
 - **Keyboard shortcuts** — `A` `B` `C` `D` to select, `Space` to confirm, `Enter` for next question
-- **Mid-quiz resume** — progress saved to localStorage; a "Continue" card appears on the home page
+- **Study / Exam mode** — study mode shows the answer after each question; exam mode hides feedback until the end, uses a total time limit and a question map to jump around
+- **Question pool** — all questions, unsolved, my mistakes, or due for review
+- **Spaced repetition** — a question you got right comes back after 1 → 3 → 7 → 14 → 30 days; wrong or "not sure" answers come back immediately. A "Time to review" card on the home page shows what's due
+- **"Not sure" flag** — a lucky guess still counts as correct, but the question stays in your review list
+- **Shuffled options** — prevents memorising "the answer was B" (questions whose explanation mentions option letters keep their order)
+- **Mid-quiz resume** — start on your PC, continue on your phone; a "Continue" card appears on the home page
 - **Confetti** — fires on 80%+ score 🎉
 
+### Accounts & Sync
+- Username + password sign-in (Supabase Auth; the username is stored as `username@quizapp.user` behind the scenes, no emails are sent)
+- Every answer is saved per user, so progress, topic stats and history follow you across devices
+
 ### Score History (`/gecmis`)
-- Last 20 results stored in localStorage
+- Last 50 results, synced to your account
 - Summary stats: total quizzes, average score, personal best
 - Per-entry: score %, topic/category, correct count, time taken, timestamp
 
 ### Admin Panel (`/admin`)
-- **Password protected** (default: `eysadem` — change in `QuizContext.jsx`)
+- **Admin-only** — only accounts listed in the `admins` table can see it; writes are enforced by Postgres Row Level Security
 - **Question list** — search by text, filter by category/topic chips, delete individually or all at once
 - **Question editor** — add or edit questions via form (EN/TR fields, options, correct answer, explanation)
 - **JSON upload** — drag & drop or click to select; validates format, detects duplicates (overwrite or merge-only)
@@ -37,7 +46,6 @@ During university I kept running into the same problem: there was no tool where 
 ```json
 [
   {
-    "id": 1,
     "category": "Network",
     "topic": "TCP",
     "question": { "en": "...", "tr": "..." },
@@ -50,7 +58,7 @@ During university I kept running into the same problem: there was no tool where 
 
 | Field | Required | Notes |
 |---|---|---|
-| `id` | Yes | Unique integer |
+| `id` | No | Ignored on import — the database assigns IDs. Re-uploading a question with the same text updates it in place |
 | `category` | No | Groups topics on the home page |
 | `topic` | No | Sub-category within a category |
 | `question` | Yes | Object `{ en, tr }` or plain string |
@@ -84,14 +92,25 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173).
 
-### Supabase Connection
+### Supabase Setup
 
-Create a `.env` file in the project root:
+1. Create a `.env` file in the project root:
 
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-```
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+2. In the Supabase dashboard, open **SQL Editor** and run [`supabase/schema.sql`](supabase/schema.sql). It creates the user tables and locks the `questions` table down (read: signed-in users, write: admins only).
+3. **Authentication → Sign In / Providers → Email**: turn off **Confirm email**. This is required — accounts use usernames, so there is no real inbox to confirm.
+4. Sign up in the app, then make yourself admin in the SQL Editor:
+
+   ```sql
+   insert into public.admins (user_id)
+   select id from auth.users where email = 'yourusername@quizapp.user';
+   ```
+
+Re-running `schema.sql` is safe; do it after pulling schema changes.
 
 ### Production Build
 
@@ -109,8 +128,14 @@ src/
 ├── components/
 │   └── Navbar.jsx          # Top nav with lang toggle + mobile hamburger
 ├── context/
-│   └── QuizContext.jsx     # Global state: questions, lang, score history, progress
+│   ├── AuthContext.jsx     # Supabase session, sign in/up/out, isAdmin
+│   └── QuizContext.jsx     # Questions, per-user stats, history, progress (synced)
+├── lib/
+│   ├── supabase.js         # Supabase client
+│   ├── filters.js          # Category/topic filters, question pools, spaced-repetition schedule
+│   └── quizUtils.js        # Shuffling, option order, clock formatting
 ├── pages/
+│   ├── Login.jsx           # Sign in / sign up
 │   ├── Home.jsx            # Category/topic selector + resume card
 │   ├── QuizConfig.jsx      # Pre-quiz settings (count, order, timer)
 │   ├── Quiz.jsx            # Quiz engine with timer + keyboard shortcuts
@@ -121,7 +146,9 @@ src/
 ├── App.css                 # All component styles
 └── index.css               # CSS variables, keyframes, global reset
 public/
-└── questions.json          # Default sample questions (loaded on first run)
+└── questions.json          # Default sample questions (Admin → "Reset to default")
+supabase/
+└── schema.sql              # Tables, RLS policies, record_answer(s) functions
 ```
 
 ---

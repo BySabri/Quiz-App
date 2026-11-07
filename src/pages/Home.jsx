@@ -1,30 +1,23 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuiz } from '../context/QuizContext';
+import { applyPool } from '../lib/filters';
 
 export default function Home() {
-  const { questions, lang, getAllProgress, clearProgress, scoreHistory } = useQuiz();
+  const { questions, lang, getAllProgress, clearProgress, stats } = useQuiz();
   const navigate = useNavigate();
   const tr = lang === 'tr';
 
   useEffect(() => { document.title = 'QuizApp'; }, []);
 
-  const [dismissedKeys, setDismissedKeys] = useState(new Set());
+  const resumeSessions = getAllProgress()
+    .filter(({ data }) => data.questionIds.length > 0 && data.current < data.questionIds.length);
 
-  const resumeSessions = useMemo(() => {
-    return getAllProgress()
-      .filter(({ progressKey, data }) => {
-        if (dismissedKeys.has(progressKey)) return false;
-        if (!data?.questionIds?.length) return false;
-        if (data.current >= data.questionIds.length) return false;
-        return true;
-      });
-  }, [dismissedKeys]); // eslint-disable-line
-
-  function handleDiscard(progressKey, filter) {
-    clearProgress(filter ?? progressKey);
-    setDismissedKeys(prev => new Set([...prev, progressKey]));
+  function handleDiscard(progressKey) {
+    clearProgress(progressKey);
   }
+
+  const dueCount = applyPool(questions, 'due', stats).length;
 
   const categoryMap = {};
   questions.forEach(q => {
@@ -35,32 +28,10 @@ export default function Home() {
     categoryMap[cat][topic].push(q);
   });
 
-  // Topic bazlı istatistik: tamamlanan + devam eden tüm quizlerdeki cevapları global olarak derle
+  // Topic bazlı istatistik: her sorunun SON cevabına göre (tüm cihazlardan, kalıcı)
   const statsMap = useMemo(() => {
     const map = {};
-    const globalAnswers = {};
 
-    // 1. Tamamlanan quizler (scoreHistory, oldest -> newest)
-    [...scoreHistory].reverse().forEach(entry => {
-      if (entry.answerMap) {
-        Object.values(entry.answerMap).forEach(ans => {
-          if (ans.questionId) globalAnswers[ans.questionId] = ans;
-        });
-      }
-    });
-
-    // 2. Devam eden quizler (answerMap'ten hesapla — scoreHistory'yi override eder)
-    getAllProgress().forEach(({ data }) => {
-      if (data.answerMap) {
-        Object.values(data.answerMap).forEach(ans => {
-          if (ans.questionId) {
-            globalAnswers[ans.questionId] = ans;
-          }
-        });
-      }
-    });
-
-    // 3. Soruları dolaşıp topic'lere göre grupla
     questions.forEach(q => {
       const cat = q.category || 'Genel';
       const topic = q.topic || 'Diğer';
@@ -72,10 +43,10 @@ export default function Home() {
       
       map[key].totalQ++;
       
-      const ans = globalAnswers[q.id];
-      if (ans && ans.selected !== null) {
+      const s = stats[q.id];
+      if (s) {
         map[key].answeredCount++;
-        if (ans.selected === ans.correct) map[key].correctCount++;
+        if (s.lastCorrect) map[key].correctCount++;
         else map[key].wrongCount++;
       }
     });
@@ -89,7 +60,7 @@ export default function Home() {
     });
 
     return map;
-  }, [scoreHistory, questions]); // eslint-disable-line
+  }, [stats, questions]);
 
   function goConfig(filter) { navigate('/quiz-config', { state: { filter } }); }
 
@@ -110,6 +81,7 @@ export default function Home() {
             <div>
               <p className="resume-title">{tr ? 'Devam eden quiz' : 'Quiz in progress'}</p>
               <p className="resume-sub">
+                {data.config?.mode === 'exam' && (tr ? '📝 Sınav · ' : '📝 Exam · ')}
                 {resumeLabel(data)} · {data.current + 1}/{data.questionIds.length} {tr ? 'soruda kaldın' : 'questions in'}
               </p>
             </div>
@@ -120,12 +92,34 @@ export default function Home() {
               {tr ? 'Devam Et' : 'Continue'}
             </button>
             <button className="btn-ghost-danger btn-sm"
-              onClick={() => handleDiscard(progressKey, data.filter)}>
+              onClick={() => handleDiscard(progressKey)}>
               {tr ? 'Sil' : 'Discard'}
             </button>
           </div>
         </div>
       ))}
+
+      {/* Aralıklı tekrar: zamanı gelen sorular */}
+      {dueCount > 0 && (
+        <div className="resume-card due-card">
+          <div className="resume-info">
+            <span className="resume-icon">🔁</span>
+            <div>
+              <p className="resume-title">{tr ? 'Tekrar zamanı' : 'Time to review'}</p>
+              <p className="resume-sub">
+                {tr ? `${dueCount} soru tekrar bekliyor (yanlışlar, emin olmadıkların ve zamanı gelen doğrular)`
+                    : `${dueCount} questions due (mistakes, unsure ones and correct ones due again)`}
+              </p>
+            </div>
+          </div>
+          <div className="resume-actions">
+            <button className="btn-primary btn-sm"
+              onClick={() => navigate('/quiz-config', { state: { filter: null, pool: 'due' } })}>
+              {tr ? 'Tekrar Et' : 'Review'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="hero">

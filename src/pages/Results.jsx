@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useQuiz } from '../context/QuizContext';
 
 function Confetti() {
@@ -58,7 +58,7 @@ export default function Results() {
   const navigate   = useNavigate();
   const { lang, getText } = useQuiz();
 
-  if (!state) { navigate('/'); return null; }
+  if (!state) return <Navigate to="/" replace />;
 
   const { answers, questions } = state;
   const correct = answers.filter(a => a.selected === a.correct).length;
@@ -74,6 +74,13 @@ export default function Results() {
   }
 
   const { label, cls } = grade();
+
+  function explanationOf(q) {
+    if (!q.explanation) return null;
+    return typeof q.explanation === 'object'
+      ? q.explanation[lang] ?? q.explanation.en ?? q.explanation.tr
+      : q.explanation;
+  }
 
   return (
     <>
@@ -104,11 +111,14 @@ export default function Results() {
                     {!isCorrect && (
                       <p className="result-answer">
                         {lang === 'en' ? 'Your answer:' : 'Senin cevabın:'}{' '}
-                        <b>{options[a.selected]}</b>
+                        <b>{a.selected === -1 ? (lang === 'en' ? '(blank / time ran out)' : '(boş / süre doldu)') : options[a.selected]}</b>
                         {' — '}
                         {lang === 'en' ? 'Correct:' : 'Doğru:'}{' '}
                         <b>{options[a.correct]}</b>
                       </p>
+                    )}
+                    {!isCorrect && explanationOf(q) && (
+                      <p className="result-expl">💡 {explanationOf(q)}</p>
                     )}
                   </div>
                 </div>

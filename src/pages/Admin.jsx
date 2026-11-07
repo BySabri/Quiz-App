@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuiz } from '../context/QuizContext';
+import { useAuth } from '../context/AuthContext';
 
 const EMPTY_FORM = {
   category: '', topic: '',
@@ -9,9 +10,8 @@ const EMPTY_FORM = {
   explanation_en: '', explanation_tr: '',
 };
 
-function buildQuestion(f, existingId) {
+function buildQuestion(f) {
   return {
-    id: existingId ?? Date.now(),
     category: f.category,
     topic: f.topic,
     question: { en: f.question_en, tr: f.question_tr },
@@ -22,10 +22,11 @@ function buildQuestion(f, existingId) {
 }
 
 export default function Admin() {
-  const { isAdminLoggedIn, adminLogin, adminLogout, questions, uploadQuestions, resetToDefault } = useQuiz();
-  const [password,          setPassword]          = useState('');
-  const [loginError,        setLoginError]        = useState('');
-  const [uploadStatus,      setUploadStatus]      = useState('');
+  const { isAdmin } = useAuth();
+  const {
+    questions, uploadStatus,
+    addQuestion, updateQuestion, deleteQuestion, clearAllQuestions, importQuestions, resetToDefault,
+  } = useQuiz();
   const [previewQuestions,  setPreviewQuestions]  = useState(null);
   const [parseError,        setParseError]        = useState('');
   const [duplicates,        setDuplicates]        = useState([]);
@@ -40,14 +41,16 @@ export default function Admin() {
   const [form,              setForm]              = useState(EMPTY_FORM);
   const [editingId,         setEditingId]         = useState(null);
   const [formError,         setFormError]         = useState('');
+  const [busy,              setBusy]              = useState(false);
   const fileRef = useRef();
 
   useEffect(() => { document.title = 'Admin | QuizApp'; }, []);
 
-  function handleLogin(e) {
-    e.preventDefault();
-    if (!adminLogin(password)) setLoginError('Şifre yanlış.');
-    setPassword('');
+  // Aynı anda iki işlem başlatılmasın (çift tıklama vb.)
+  async function run(action) {
+    if (busy) return { success: false };
+    setBusy(true);
+    try { return await action(); } finally { setBusy(false); }
   }
 
   const categories = [...new Set(questions.map(q => q.category || 'Genel'))];
@@ -66,15 +69,13 @@ export default function Admin() {
   // ---- Silme ----
   function handleDelete(id) {
     if (confirmDeleteId !== id) { setConfirmDeleteId(id); return; }
-    uploadQuestions(questions.filter(q => q.id !== id));
     setConfirmDeleteId(null);
-    setUploadStatus('Soru silindi.');
+    run(() => deleteQuestion(id));
   }
   function handleDeleteAll() {
     if (!confirmDeleteAll) { setConfirmDeleteAll(true); return; }
-    uploadQuestions([]);
     setConfirmDeleteAll(false);
-    setUploadStatus('Tüm sorular silindi.');
+    run(() => clearAllQuestions());
   }
   function handleCatChange(val) { setFilterCat(val); setFilterTopic(''); }
 
@@ -100,21 +101,15 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function handleFormSave() {
+  async function handleFormSave() {
     if (!form.question_en.trim()) { setFormError('İngilizce soru metni zorunlu.'); return; }
     if (form.opt_en.some(o => !o.trim())) { setFormError('Tüm İngilizce seçenekler doldurulmalı.'); return; }
     setFormError('');
-    const q = buildQuestion(form, editingId ?? undefined);
-    let updated;
-    if (editingId !== null) {
-      updated = questions.map(x => x.id === editingId ? q : x);
-    } else {
-      updated = [...questions, { ...q, id: (questions.reduce((m, x) => Math.max(m, x.id || 0), 0)) + 1 }];
-    }
-    uploadQuestions(updated);
+    const q = buildQuestion(form);
+    const { success } = await run(() => editingId !== null ? updateQuestion(editingId, q) : addQuestion(q));
+    if (!success) return; // hata mesajı uploadStatus'ta, form korunur
     setForm(EMPTY_FORM);
     setEditingId(null);
-    setUploadStatus(editingId !== null ? 'Soru güncellendi.' : 'Yeni soru eklendi.');
     setActiveTab('questions');
   }
 
@@ -166,35 +161,19 @@ export default function Admin() {
     processFile(e.dataTransfer.files[0]);
   }
 
-  function handleUpload(mode = 'replace') {
+  // replace: aynı metinli mevcut sorular güncellenir (ID'leri korunur), yeniler eklenir
+  // merge  : sadece yeni sorular eklenir
+  async function handleUpload(mode = 'replace') {
     if (!previewQuestions) return;
-
-    const qText = q => (typeof q.question === 'object' ? q.question.en ?? q.question.tr : q.question) ?? '';
-    const newTexts = new Set(previewQuestions.map(qText));
-
-    // Non-duplicate existing questions are always kept
-    const kept = questions.filter(q => !newTexts.has(qText(q)));
-
-    let final;
-    if (mode === 'replace') {
-      // Keep non-duplicate existing + overwrite duplicates with new versions + add brand new
-      final = [...kept, ...previewQuestions];
-    } else {
-      // merge: keep everything existing, only add non-duplicates from new file
-      const existingTexts = new Set(questions.map(qText));
-      const newOnly = previewQuestions.filter(q => !existingTexts.has(qText(q)));
-      final = [...questions, ...newOnly];
-    }
-    uploadQuestions(final);
-    setUploadStatus(`${final.length} soru yüklendi.`);
+    const { success } = await run(() => importQuestions(previewQuestions, mode));
+    if (!success) return;
     setPreviewQuestions(null); setDuplicates([]); setSelectedFile(null);
     if (fileRef.current) fileRef.current.value = '';
   }
 
   function handleReset() {
-    if (!confirm('Varsayılan sorulara sıfırlanacak. Emin misin?')) return;
-    resetToDefault();
-    setUploadStatus('Varsayılan sorulara sıfırlandı.');
+    if (!confirm(`Mevcut ${questions.length} sorunun HEPSİ silinip varsayılan örnek sorular yüklenecek. Kullanıcıların bu sorulardaki ilerlemesi de silinir. Emin misin?`)) return;
+    run(() => resetToDefault());
   }
 
   function handleExport() {
@@ -205,21 +184,20 @@ export default function Admin() {
     URL.revokeObjectURL(url);
   }
 
-  if (!isAdminLoggedIn) {
+  if (!isAdmin) {
     return (
       <div className="admin-login">
-        <div className="login-card">
-          <h2>Admin Girişi</h2>
-          <form onSubmit={handleLogin}>
-            <input type="password" placeholder="Şifre" value={password}
-              onChange={e => setPassword(e.target.value)} autoFocus />
-            {loginError && <p className="error">{loginError}</p>}
-            <button className="btn-primary" type="submit">Giriş Yap</button>
-          </form>
+        <div className="login-card" style={{ textAlign: 'center' }}>
+          <h2>Admin</h2>
+          <p className="hint">Bu sayfa sadece admin hesabı içindir.</p>
         </div>
       </div>
     );
   }
+
+  const statusEl = uploadStatus && (
+    <span className={uploadStatus.ok ? 'success' : 'error'}>{uploadStatus.msg}</span>
+  );
 
   const allCategories = [...new Set(questions.map(q => q.category || 'Genel'))];
   const allTopics     = form.category
@@ -230,7 +208,7 @@ export default function Admin() {
     <div className="admin-page">
       <div className="admin-header">
         <h1>Admin Paneli</h1>
-        <button className="btn-secondary" onClick={adminLogout}>Çıkış</button>
+        {busy && <span className="hint" style={{ margin: 0 }}>Kaydediliyor…</span>}
       </div>
 
       <div className="admin-stats">
@@ -280,7 +258,7 @@ export default function Admin() {
 
           <div className="filter-result-bar">
             <span className="filter-result-info">{visibleQuestions.length} soru</span>
-            {uploadStatus && <span className="success">{uploadStatus}</span>}
+            {statusEl}
             <button className="btn-primary btn-sm" onClick={() => { setForm(EMPTY_FORM); setEditingId(null); setActiveTab('editor'); }}>+ Soru Ekle</button>
             {questions.length > 0 && (
               confirmDeleteAll
@@ -424,7 +402,6 @@ export default function Admin() {
               <p className="format-title">Beklenen JSON Formatı</p>
               <pre className="format-pre">{`[
   {
-    "id": 1,
     "category": "Network",
     "topic": "TCP",
     "question": { "en": "...", "tr": "..." },
@@ -437,6 +414,7 @@ export default function Admin() {
                 <span className="format-rule">✓ <code>answer</code> → doğru seçeneğin indexi (0–3)</span>
                 <span className="format-rule">✓ <code>topic</code> ve <code>explanation</code> opsiyonel</span>
                 <span className="format-rule">✓ Tek dil (sadece <code>en</code> veya <code>tr</code>) de geçerli</span>
+                <span className="format-rule">✓ <code>id</code> yazmana gerek yok, veritabanı atar (yazarsan yok sayılır)</span>
               </div>
             </div>
 
@@ -497,7 +475,7 @@ export default function Admin() {
                 )}
               </div>
             )}
-            {uploadStatus && <p className="success" style={{marginTop:10}}>{uploadStatus}</p>}
+            {uploadStatus && <p style={{marginTop:10}}>{statusEl}</p>}
           </div>
 
           <div className="admin-section">

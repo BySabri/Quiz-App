@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { QuizProvider } from './context/QuizContext';
-import { useQuiz } from './context/QuizContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { QuizProvider, useQuiz } from './context/QuizContext';
 import Navbar from './components/Navbar';
+import Login from './pages/Login';
 import Home from './pages/Home';
 import QuizConfig from './pages/QuizConfig';
 import Quiz from './pages/Quiz';
@@ -25,18 +26,24 @@ function AppLoading() {
 }
 
 function AppError({ message }) {
+  const { signOut } = useAuth();
   return (
     <div className="app-loading">
       <p style={{ color: 'var(--danger)', marginBottom: 8 }}>Veritabanına bağlanılamadı</p>
-      <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{message}</p>
+      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>{message}</p>
+      <button className="btn-secondary btn-sm" onClick={signOut}>Çıkış yap</button>
     </div>
   );
 }
 
 function Inner() {
-  const { loading, dbError } = useQuiz();
-  if (loading)  return <AppLoading />;
-  if (dbError)  return <AppError message={dbError} />;
+  const { authLoading, user } = useAuth();
+  const { loading, dbError }  = useQuiz();
+
+  if (authLoading) return <AppLoading />;
+  if (!user)       return <Login />;
+  if (loading)     return <AppLoading />;
+  if (dbError)     return <AppError message={dbError} />;
 
   return (
     <>
@@ -55,12 +62,22 @@ function Inner() {
   );
 }
 
-export default function App() {
+// Kullanıcı değişince (giriş/çıkış) quiz state'i sıfırdan kurulsun
+function UserScopedApp() {
+  const { user } = useAuth();
   return (
-    <QuizProvider>
+    <QuizProvider key={user?.id ?? 'guest'}>
       <BrowserRouter>
         <Inner />
       </BrowserRouter>
     </QuizProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <UserScopedApp />
+    </AuthProvider>
   );
 }

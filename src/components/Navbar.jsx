@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useQuiz } from '../context/QuizContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
-  const { pathname }    = useLocation();
+  const { pathname }      = useLocation();
   const { lang, setLang } = useQuiz();
+  const { isAdmin, signOut, username } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
     { to: '/',       label: 'Ana Sayfa', labelEn: 'Home' },
     { to: '/gecmis', label: 'Geçmiş',   labelEn: 'History' },
-    { to: '/admin',  label: 'Admin',     labelEn: 'Admin' },
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin', labelEn: 'Admin' }] : []),
   ];
 
   const tr = lang === 'tr';
@@ -43,6 +45,10 @@ export default function Navbar() {
           <span className={lang === 'tr' ? 'lang-label active' : 'lang-label'}>TR</span>
         </div>
 
+        <button className="btn-secondary btn-sm nav-desktop" onClick={signOut} title={username}>
+          {tr ? 'Çıkış' : 'Sign out'} · {username}
+        </button>
+
         {/* Hamburger (mobile) */}
         <button className="hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menü">
           <span className={`ham-bar ${menuOpen ? 'open' : ''}`} />
@@ -61,6 +67,9 @@ export default function Navbar() {
               {tr ? l.label : l.labelEn}
             </Link>
           ))}
+          <button className="mobile-link mobile-link-btn" onClick={signOut}>
+            {tr ? 'Çıkış Yap' : 'Sign out'} ({username})
+          </button>
         </div>
       )}
     </nav>
